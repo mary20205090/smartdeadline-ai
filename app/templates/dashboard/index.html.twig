@@ -29,7 +29,44 @@
         color: #6b7280;
         margin-top: 8px;
     }
+    .dashboard-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
 
+    .logout-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #dc2626;
+        color: #ffffff;
+        padding: 11px 18px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+        box-shadow: 0 6px 14px rgba(220, 38, 38, 0.25);
+        transition: background 0.2s ease, transform 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .logout-button:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 640px) {
+        .dashboard-topbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .logout-button {
+            width: 100%;
+        }
+    }
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -122,8 +159,19 @@
 
 <div class="dashboard-container">
     <div class="dashboard-header">
-        <h1>SMARTDEADLINE AI Dashboard</h1>
-        <p>Welcome, {{ app.user.fullName ?? app.user.userIdentifier }}. Track your courses, assignments, and deadline risks here.</p>
+        <div class="dashboard-topbar">
+            <div>
+                <h1>SMARTDEADLINE AI Dashboard</h1>
+                <p>
+                    Welcome, {{ app.user.fullName ?? app.user.userIdentifier }}.
+                    Track your courses, assignments, and deadline risks here.
+                </p>
+            </div>
+
+            <a href="{{ path('app_logout') }}" class="logout-button">
+                Logout
+            </a>
+        </div>
     </div>
 
     <div class="stats-grid">
