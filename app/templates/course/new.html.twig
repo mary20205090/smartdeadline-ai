@@ -1,11 +1,67 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Course{% endblock %}
+{% block title %}Add Course | SMARTDEADLINE AI{% endblock %}
 
 {% block body %}
-    <h1>Create new Course</h1>
+<style>
+    body {
+        margin: 0;
+        background: #f4f7fb;
+        font-family: Arial, sans-serif;
+    }
 
-    {{ include('course/_form.html.twig') }}
+    .page-container {
+        max-width: 760px;
+        margin: 50px auto;
+        padding: 0 20px;
+    }
 
-    <a href="{{ path('app_course_index') }}">back to list</a>
+    .page-header {
+        margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        color: #111827;
+        font-size: 30px;
+    }
+
+    .page-header p {
+        margin: 8px 0 0;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .card {
+        background: #ffffff;
+        padding: 32px;
+        border-radius: 16px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 20px;
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <h1>Add Course</h1>
+        <p>Add a course or unit you want to track for assignments, deadlines, and future risk predictions.</p>
+    </div>
+
+    <div class="card">
+        {{ include('course/_form.html.twig', {'button_label': 'Save Course'}) }}
+    </div>
+
+    <a href="{{ path('app_course_index') }}" class="back-link">← Back to courses</a>
+</div>
 {% endblock %}

@@ -37,6 +37,8 @@ class Course
     public function __construct()
     {
         $this->assignments = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+
     }
 
     public function getId(): ?int

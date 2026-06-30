@@ -1,34 +1,159 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Course{% endblock %}
+{% block title %}Course Details | SMARTDEADLINE AI{% endblock %}
 
 {% block body %}
-    <h1>Course</h1>
+<style>
+    body {
+        margin: 0;
+        background: #f4f7fb;
+        font-family: Arial, sans-serif;
+    }
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ course.id }}</td>
-            </tr>
-            <tr>
-                <th>Name</th>
-                <td>{{ course.name }}</td>
-            </tr>
-            <tr>
-                <th>Code</th>
-                <td>{{ course.code }}</td>
-            </tr>
-            <tr>
-                <th>CreatedAt</th>
-                <td>{{ course.createdAt ? course.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
+    .page-container {
+        max-width: 760px;
+        margin: 50px auto;
+        padding: 0 20px;
+    }
 
-    <a href="{{ path('app_course_index') }}">back to list</a>
+    .page-header {
+        margin-bottom: 24px;
+    }
 
-    <a href="{{ path('app_course_edit', {'id': course.id}) }}">edit</a>
+    .page-header h1 {
+        margin: 0;
+        color: #111827;
+        font-size: 30px;
+    }
 
-    {{ include('course/_delete_form.html.twig') }}
+    .page-header p {
+        margin: 8px 0 0;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .card {
+        background: #ffffff;
+        padding: 32px;
+        border-radius: 16px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 16px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: #6b7280;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .detail-value {
+        color: #111827;
+        font-size: 15px;
+        text-align: right;
+    }
+
+    .page-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-top: 22px;
+    }
+
+    .left-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #2563eb;
+        color: #ffffff;
+        padding: 11px 18px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .btn:hover {
+        background: #1d4ed8;
+    }
+
+    .btn-secondary {
+        background: #374151;
+    }
+
+    .btn-secondary:hover {
+        background: #1f2937;
+    }
+
+    @media (max-width: 640px) {
+        .detail-row {
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .detail-value {
+            text-align: left;
+        }
+
+        .page-actions,
+        .left-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <h1>Course Details</h1>
+        <p>View the course information used for assignment tracking and deadline prediction.</p>
+    </div>
+
+    <div class="card">
+        <div class="detail-row">
+            <div class="detail-label">Course Name</div>
+            <div class="detail-value">{{ course.name }}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Course Code</div>
+            <div class="detail-value">{{ course.code ?: 'N/A' }}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Date Added</div>
+            <div class="detail-value">{{ course.createdAt ? course.createdAt|date('d M Y, H:i') : 'N/A' }}</div>
+        </div>
+    </div>
+
+    <div class="page-actions">
+        <div class="left-actions">
+            <a href="{{ path('app_course_index') }}" class="btn btn-secondary">Back to Courses</a>
+            <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="btn">Edit Course</a>
+        </div>
+
+        {{ include('course/_delete_form.html.twig') }}
+    </div>
+</div>
 {% endblock %}

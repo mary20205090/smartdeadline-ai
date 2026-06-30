@@ -1,13 +1,88 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Course{% endblock %}
+{% block title %}Edit Course | SMARTDEADLINE AI{% endblock %}
 
 {% block body %}
-    <h1>Edit Course</h1>
+<style>
+    body {
+        margin: 0;
+        background: #f4f7fb;
+        font-family: Arial, sans-serif;
+    }
 
-    {{ include('course/_form.html.twig', {'button_label': 'Update'}) }}
+    .page-container {
+        max-width: 760px;
+        margin: 50px auto;
+        padding: 0 20px;
+    }
 
-    <a href="{{ path('app_course_index') }}">back to list</a>
+    .page-header {
+        margin-bottom: 24px;
+    }
 
-    {{ include('course/_delete_form.html.twig') }}
+    .page-header h1 {
+        margin: 0;
+        color: #111827;
+        font-size: 30px;
+    }
+
+    .page-header p {
+        margin: 8px 0 0;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .card {
+        background: #ffffff;
+        padding: 32px;
+        border-radius: 16px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+    }
+
+    .page-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-top: 20px;
+    }
+
+    .back-link {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+        .page-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .back-link {
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <h1>Edit Course</h1>
+        <p>Update the course details used for tracking assignments and deadline predictions.</p>
+    </div>
+
+    <div class="card">
+        {{ include('course/_form.html.twig', {'button_label': 'Update Course'}) }}
+    </div>
+
+    <div class="page-actions">
+        <a href="{{ path('app_course_index') }}" class="back-link">← Back to courses</a>
+
+        {{ include('course/_delete_form.html.twig') }}
+    </div>
+</div>
 {% endblock %}
