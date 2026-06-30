@@ -1,21 +1,167 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Register | SMARTDEADLINE AI{% endblock %}
 
 {% block body %}
-    <h1>Register</h1>
+<style>
+    body {
+        margin: 0;
+        background: #f4f7fb;
+        font-family: Arial, sans-serif;
+    }
 
-    {{ form_errors(registrationForm) }}
+    .auth-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+    }
 
-    {{ form_start(registrationForm) }}
-    
-        {{ form_row(registrationForm.fullName) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+    .auth-card {
+        width: 100%;
+        max-width: 460px;
+        background: #ffffff;
+        padding: 36px;
+        border-radius: 16px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+    }
 
-        <button type="submit" class="btn">Register</button>
-    {{ form_end(registrationForm) }}
+    .auth-card h1 {
+        margin: 0 0 10px;
+        font-size: 28px;
+        color: #111827;
+    }
+
+    .auth-card p {
+        margin: 0 0 28px;
+        color: #6b7280;
+        line-height: 1.5;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        color: #374151;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        font-size: 15px;
+        box-sizing: border-box;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 12px 0 18px;
+        color: #374151;
+        font-size: 14px;
+    }
+
+    .checkbox-row input {
+        width: auto;
+    }
+
+    .btn-primary {
+        width: 100%;
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 13px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 15px;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 22px;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .auth-footer a {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .form-error {
+        color: #b91c1c;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    ul {
+        margin: 6px 0 0;
+        padding-left: 18px;
+        color: #b91c1c;
+        font-size: 13px;
+    }
+</style>
+
+<div class="auth-page">
+    <div class="auth-card">
+        <h1>Create account</h1>
+        <p>Join SMARTDEADLINE AI to manage your courses, track assignments, and receive deadline risk alerts.</p>
+
+        {{ form_start(registrationForm) }}
+
+            <div class="form-group">
+                {{ form_label(registrationForm.fullName, 'Full Name') }}
+                {{ form_widget(registrationForm.fullName) }}
+                {{ form_errors(registrationForm.fullName) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.email, 'Email address') }}
+                {{ form_widget(registrationForm.email) }}
+                {{ form_errors(registrationForm.email) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.plainPassword, 'Password') }}
+                {{ form_widget(registrationForm.plainPassword) }}
+                {{ form_errors(registrationForm.plainPassword) }}
+            </div>
+
+            <div class="checkbox-row">
+                {{ form_widget(registrationForm.agreeTerms) }}
+                {{ form_label(registrationForm.agreeTerms, 'I agree to the terms and conditions') }}
+            </div>
+            {{ form_errors(registrationForm.agreeTerms) }}
+
+            <button type="submit" class="btn-primary">Create account</button>
+
+        {{ form_end(registrationForm) }}
+
+        <div class="auth-footer">
+            Already have an account?
+            <a href="{{ path('app_login') }}">Sign in</a>
+        </div>
+    </div>
+</div>
 {% endblock %}
