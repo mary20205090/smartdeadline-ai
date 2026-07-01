@@ -64,6 +64,10 @@ class Assignment
         $this->activityLogs = new ArrayCollection();
         $this->predictions = new ArrayCollection();
         $this->notifications = new ArrayCollection();
+
+        $this->createdAt = new \DateTimeImmutable();
+        $this->status = 'pending';
+
     }
 
     public function getId(): ?int

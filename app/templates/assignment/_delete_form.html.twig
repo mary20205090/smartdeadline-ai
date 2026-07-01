@@ -1,0 +1,131 @@
+{% set modalId = 'deleteAssignmentModal' ~ assignment.id %}
+
+<style>
+    .delete-trigger {
+        background: #dc2626;
+        color: #ffffff;
+        border: none;
+        padding: 11px 18px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 6px 14px rgba(220, 38, 38, 0.25);
+    }
+
+    .delete-trigger:hover {
+        background: #b91c1c;
+    }
+
+    .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.55);
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        padding: 20px;
+    }
+
+    .modal-backdrop.active {
+        display: flex;
+    }
+
+    .modal-card {
+        width: 100%;
+        max-width: 440px;
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
+    }
+
+    .modal-card h3 {
+        margin: 0 0 10px;
+        color: #111827;
+        font-size: 22px;
+    }
+
+    .modal-card p {
+        color: #6b7280;
+        line-height: 1.5;
+        margin-bottom: 22px;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .modal-cancel {
+        background: #e5e7eb;
+        color: #111827;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .modal-delete {
+        background: #dc2626;
+        color: #ffffff;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .modal-delete:hover {
+        background: #b91c1c;
+    }
+</style>
+
+<button type="button"
+        class="delete-trigger"
+        onclick="document.getElementById('{{ modalId }}').classList.add('active')">
+    Delete Assignment
+</button>
+
+<div class="modal-backdrop" id="{{ modalId }}">
+    <div class="modal-card">
+        <h3>Delete assignment?</h3>
+
+        <p>
+            You are about to delete <strong>{{ assignment.title }}</strong>.
+            This action cannot be undone.
+        </p>
+
+        <div class="modal-actions">
+            <button type="button"
+                    class="modal-cancel"
+                    onclick="document.getElementById('{{ modalId }}').classList.remove('active')">
+                Cancel
+            </button>
+
+            <form method="post" action="{{ path('app_assignment_delete', {'id': assignment.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ assignment.id) }}">
+                <button class="modal-delete">Yes, delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const modal = document.getElementById('{{ modalId }}');
+
+        if (!modal) {
+            return;
+        }
+
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    })();
+</script>

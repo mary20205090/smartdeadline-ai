@@ -1,0 +1,76 @@
+<style>
+    .form-group { margin-bottom: 20px; }
+
+    .form-group label {
+        display: block; margin-bottom: 8px; color: #374151;
+        font-weight: bold; font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%; padding: 12px 14px; border: 1px solid #d1d5db;
+        border-radius: 10px; font-size: 15px; box-sizing: border-box;
+        background: #ffffff;
+    }
+
+    .form-group textarea { min-height: 100px; resize: vertical; }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none; border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .form-help { margin-top: 6px; color: #6b7280; font-size: 13px; }
+    .form-errors { color: #b91c1c; font-size: 13px; margin-top: 6px; }
+
+    .btn-primary {
+        width: 100%; background: #2563eb; color: #ffffff;
+        border: none; padding: 13px; border-radius: 10px;
+        font-weight: bold; font-size: 15px; cursor: pointer;
+        margin-top: 8px;
+    }
+
+    .btn-primary:hover { background: #1d4ed8; }
+</style>
+
+{{ form_start(form) }}
+    <div class="form-group">
+        {{ form_label(form.title, 'Assignment Title') }}
+        {{ form_widget(form.title, {'attr': {'placeholder': 'Example: CAT 1 Quiz'}}) }}
+        <div class="form-help">Enter a clear assignment title.</div>
+        <div class="form-errors">{{ form_errors(form.title) }}</div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.description, 'Description') }}
+        {{ form_widget(form.description, {'attr': {'placeholder': 'Brief notes about the assignment'}}) }}
+        <div class="form-help">Optional notes or instructions.</div>
+        <div class="form-errors">{{ form_errors(form.description) }}</div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.deadline, 'Deadline') }}
+        {{ form_widget(form.deadline) }}
+        <div class="form-help">Select the assignment deadline date and time.</div>
+        <div class="form-errors">{{ form_errors(form.deadline) }}</div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.priority, 'Priority') }}
+        {{ form_widget(form.priority) }}
+        <div class="form-help">Choose how urgent or important this assignment is.</div>
+        <div class="form-errors">{{ form_errors(form.priority) }}</div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.course, 'Course') }}
+        {{ form_widget(form.course) }}
+        <div class="form-help">Select the course this assignment belongs to.</div>
+        <div class="form-errors">{{ form_errors(form.course) }}</div>
+    </div>
+
+    <button class="btn-primary">{{ button_label|default('Save Assignment') }}</button>
+{{ form_end(form) }}

@@ -1,0 +1,142 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Assignments | SMARTDEADLINE AI{% endblock %}
+
+{% block body %}
+<style>
+    body { margin: 0; background: #f4f7fb; font-family: Arial, sans-serif; }
+
+    .page-container { max-width: 1150px; margin: 40px auto; padding: 0 20px; }
+
+    .page-header {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 20px; margin-bottom: 24px;
+    }
+
+    .page-header h1 { margin: 0; color: #111827; font-size: 30px; }
+    .page-header p { margin: 8px 0 0; color: #6b7280; }
+
+    .btn {
+        display: inline-block; background: #2563eb; color: #fff;
+        padding: 10px 16px; border-radius: 8px; text-decoration: none;
+        font-weight: bold; font-size: 14px;
+    }
+
+    .btn:hover { background: #1d4ed8; }
+    .btn-secondary { background: #374151; }
+    .btn-secondary:hover { background: #1f2937; }
+
+    .card {
+        background: #fff; border-radius: 14px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+        padding: 24px;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+        text-align: left; color: #374151; font-size: 14px;
+        padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;
+    }
+
+    td {
+        padding: 14px 0; border-bottom: 1px solid #e5e7eb;
+        color: #111827; vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+        display: inline-block; padding: 5px 10px; border-radius: 999px;
+        font-size: 12px; font-weight: bold; text-transform: capitalize;
+    }
+
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-completed { background: #dcfce7; color: #166534; }
+    .badge-high { background: #fee2e2; color: #991b1b; }
+    .badge-medium { background: #dbeafe; color: #1e40af; }
+    .badge-low { background: #e5e7eb; color: #374151; }
+
+    .actions a {
+        margin-right: 10px; color: #2563eb;
+        text-decoration: none; font-weight: bold; font-size: 14px;
+    }
+
+    .empty-state { text-align: center; color: #6b7280; padding: 40px 20px; }
+
+    @media (max-width: 800px) {
+        .page-header { flex-direction: column; align-items: stretch; }
+        .btn { text-align: center; }
+        .card { overflow-x: auto; }
+        table { min-width: 760px; }
+    }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1>My Assignments</h1>
+            <p>Track assignment deadlines, priorities, and completion progress.</p>
+        </div>
+
+        <a href="{{ path('app_assignment_new') }}" class="btn">Add Assignment</a>
+    </div>
+
+    <div class="card">
+        {% if assignments is empty %}
+            <div class="empty-state">
+                <p>No assignments added yet.</p>
+                <a href="{{ path('app_assignment_new') }}" class="btn">Create your first assignment</a>
+            </div>
+        {% else %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Course</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for assignment in assignments %}
+                    <tr>
+                        <td>{{ assignment.title }}</td>
+                        <td>
+                            {{ assignment.course.name }}
+                            {% if assignment.course.code %}
+                                <br><small>{{ assignment.course.code }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ assignment.deadline ? assignment.deadline|date('d M Y, H:i') : 'N/A' }}</td>
+                        <td>
+                            <span class="badge badge-{{ assignment.status }}">
+                                {{ assignment.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if assignment.priority %}
+                                <span class="badge badge-{{ assignment.priority }}">
+                                    {{ assignment.priority }}
+                                </span>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}">View</a>
+                            <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="{{ path('app_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
