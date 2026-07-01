@@ -197,7 +197,16 @@
     </div>
 
     <div class="section-card">
-        <h2>Upcoming Assignments</h2>
+
+        <div class="actions">
+            <a href="{{ path('app_course_new') }}" class="btn btn-primary">Add Course</a>
+            <a href="{{ path('app_course_index') }}" class="btn btn-secondary">View Courses</a>
+            <a href="{{ path('app_assignment_new') }}" class="btn btn-primary">Add Assignment</a>
+            <a href="{{ path('app_assignment_index') }}" class="btn btn-secondary">View Assignments</a>
+        </div>
+
+    <hr>
+        <h1>Upcoming Assignments</h1>
 
         {% if upcomingAssignments is empty %}
             <div class="empty-state">
@@ -217,11 +226,6 @@
             </ul>
         {% endif %}
 
-        <div class="actions">
-            <a href="{{ path('app_course_new') }}" class="btn">Add Course</a>
-            <a href="{{ path('app_course_index') }}" class="btn btn-secondary">View Courses</a>
-            <a href="#" class="btn btn-secondary">Add Assignment</a>
-        </div>
     </div>
 </div>
 {% endblock %}
