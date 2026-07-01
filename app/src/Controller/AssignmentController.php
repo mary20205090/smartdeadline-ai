@@ -96,6 +96,21 @@ final class AssignmentController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/start', name: 'app_assignment_start', methods: ['POST'])]
+    public function start(Request $request, Assignment $assignment, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessToAssignmentOwnerOnly($assignment);
+
+        if ($this->isCsrfTokenValid('start'.$assignment->getId(), $request->getPayload()->getString('_token'))) {
+            if ($assignment->getStatus() !== 'completed') {
+                $assignment->setStatus('in_progress');
+                $entityManager->flush();
+            }
+        }
+
+        return $this->redirectToRoute('app_assignment_index', [], Response::HTTP_SEE_OTHER);
+    }
+    
     #[Route('/{id}/complete', name: 'app_assignment_complete', methods: ['POST'])]
     public function complete(Request $request, Assignment $assignment, EntityManagerInterface $entityManager): Response
     {

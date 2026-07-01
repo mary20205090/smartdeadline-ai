@@ -180,7 +180,14 @@
                                 Edit
                             </a>
 
-                            {% if assignment.status != 'completed' %}
+                            {% if assignment.status == 'pending' %}
+                                <form method="post" action="{{ path('app_assignment_start', {'id': assignment.id}) }}" class="inline-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('start' ~ assignment.id) }}">
+                                    <button type="submit" class="action-btn start-btn">
+                                        Start
+                                    </button>
+                                </form>
+                            {% elseif assignment.status == 'in_progress' %}
                                 <form method="post" action="{{ path('app_assignment_complete', {'id': assignment.id}) }}" class="inline-form">
                                     <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ assignment.id) }}">
                                     <button type="submit" class="action-btn complete-btn">
