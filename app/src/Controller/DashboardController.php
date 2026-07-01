@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +17,11 @@ final class DashboardController extends AbstractController
     {
         $user = $this->getUser();
 
-        $courses = method_exists($user, 'getCourses') ? $user->getCourses() : [];
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('You must be logged in.');
+        }
+
+        $courses = $user->getCourses();
         $assignments = [];
 
         foreach ($courses as $course) {
@@ -27,6 +32,22 @@ final class DashboardController extends AbstractController
 
         $now = new DateTimeImmutable();
 
+        $pendingAssignments = array_filter($assignments, function ($assignment) {
+            return $assignment->getStatus() === 'pending';
+        });
+
+        $inProgressAssignments = array_filter($assignments, function ($assignment) {
+            return $assignment->getStatus() === 'in_progress';
+        });
+
+        $completedAssignments = array_filter($assignments, function ($assignment) {
+            return $assignment->getStatus() === 'completed';
+        });
+
+        $overdueAssignments = array_filter($assignments, function ($assignment) use ($now) {
+            return $assignment->getDeadline() < $now && $assignment->getStatus() !== 'completed';
+        });
+
         $upcomingAssignments = array_filter($assignments, function ($assignment) use ($now) {
             return $assignment->getDeadline() >= $now && $assignment->getStatus() !== 'completed';
         });
@@ -35,20 +56,14 @@ final class DashboardController extends AbstractController
             return $a->getDeadline() <=> $b->getDeadline();
         });
 
-        $overdueAssignments = array_filter($assignments, function ($assignment) use ($now) {
-            return $assignment->getDeadline() < $now && $assignment->getStatus() !== 'completed';
-        });
-
-        $completedAssignments = array_filter($assignments, function ($assignment) {
-            return $assignment->getStatus() === 'completed';
-        });
-
         return $this->render('dashboard/index.html.twig', [
             'totalCourses' => count($courses),
             'totalAssignments' => count($assignments),
-            'upcomingAssignments' => array_slice($upcomingAssignments, 0, 5),
-            'overdueCount' => count($overdueAssignments),
+            'pendingCount' => count($pendingAssignments),
+            'inProgressCount' => count($inProgressAssignments),
             'completedCount' => count($completedAssignments),
+            'overdueCount' => count($overdueAssignments),
+            'upcomingAssignments' => array_slice($upcomingAssignments, 0, 5),
         ]);
     }
 }
