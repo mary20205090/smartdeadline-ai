@@ -56,11 +56,58 @@
     .badge-medium { background: #dbeafe; color: #1e40af; }
     .badge-low { background: #e5e7eb; color: #374151; }
 
-    .actions a {
-        margin-right: 10px; color: #2563eb;
-        text-decoration: none; font-weight: bold; font-size: 14px;
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
     }
 
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 7px 11px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 13px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+
+    .action-view {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .action-view:hover {
+        background: #dbeafe;
+    }
+
+    .action-edit {
+        background: #eef2ff;
+        color: #4338ca;
+    }
+
+    .action-edit:hover {
+        background: #e0e7ff;
+    }
+
+    .inline-form {
+        margin: 0;
+    }
+
+    .complete-btn {
+        background: #16a34a;
+        color: #ffffff;
+    }
+
+    .complete-btn:hover {
+        background: #15803d;
+    }
     .empty-state { text-align: center; color: #6b7280; padding: 40px 20px; }
 
     @media (max-width: 800px) {
@@ -96,7 +143,7 @@
                         <th>Deadline</th>
                         <th>Status</th>
                         <th>Priority</th>
-                        <th>Actions</th>
+                        <th style="width: 230px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,9 +172,23 @@
                             {% endif %}
                         </td>
                         <td class="actions">
-                            <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}">View</a>
-                            <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}">Edit</a>
-                        </td>
+                            <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}" class="action-btn action-view">
+                                View
+                            </a>
+
+                            <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}" class="action-btn action-edit">
+                                Edit
+                            </a>
+
+                            {% if assignment.status != 'completed' %}
+                                <form method="post" action="{{ path('app_assignment_complete', {'id': assignment.id}) }}" class="inline-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ assignment.id) }}">
+                                    <button type="submit" class="action-btn complete-btn">
+                                        Complete
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>                    
                     </tr>
                 {% endfor %}
                 </tbody>

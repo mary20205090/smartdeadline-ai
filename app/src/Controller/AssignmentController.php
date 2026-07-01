@@ -96,6 +96,21 @@ final class AssignmentController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/complete', name: 'app_assignment_complete', methods: ['POST'])]
+    public function complete(Request $request, Assignment $assignment, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessToAssignmentOwnerOnly($assignment);
+
+        if ($this->isCsrfTokenValid('complete'.$assignment->getId(), $request->getPayload()->getString('_token'))) {
+            $assignment->setStatus('completed');
+            $assignment->setCompletedAt(new \DateTimeImmutable());
+
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_assignment_index', [], Response::HTTP_SEE_OTHER);
+    }
+
     #[Route('/{id}', name: 'app_assignment_delete', methods: ['POST'])]
     public function delete(Request $request, Assignment $assignment, EntityManagerInterface $entityManager): Response
     {

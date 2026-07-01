@@ -129,6 +129,15 @@
         background: #1d4ed8;
     }
 
+    .btn-success {
+        background: #16a34a;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-success:hover {
+        background: #15803d;
+    }
     .btn-secondary {
         background: #374151;
     }
@@ -227,9 +236,16 @@
     <div class="page-actions">
         <div class="left-actions">
             <a href="{{ path('app_assignment_index') }}" class="btn btn-secondary">Back to Assignments</a>
+
+            {% if assignment.status != 'completed' %}
+                <form method="post" action="{{ path('app_assignment_complete', {'id': assignment.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ assignment.id) }}">
+                    <button class="btn btn-success" type="submit">Mark Completed</button>
+                </form>
+            {% endif %}
+
             <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}" class="btn">Edit Assignment</a>
         </div>
-
         {{ include('assignment/_delete_form.html.twig') }}
     </div>
 </div>
