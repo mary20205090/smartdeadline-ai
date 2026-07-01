@@ -31,6 +31,7 @@ final class DashboardController extends AbstractController
         }
 
         $now = new DateTimeImmutable();
+        $dueSoonLimit = $now->modify('+3 days');
 
         $pendingAssignments = array_filter($assignments, function ($assignment) {
             return $assignment->getStatus() === 'pending';
@@ -48,11 +49,25 @@ final class DashboardController extends AbstractController
             return $assignment->getDeadline() < $now && $assignment->getStatus() !== 'completed';
         });
 
+        $dueSoonAssignments = array_filter($assignments, function ($assignment) use ($now, $dueSoonLimit) {
+            return $assignment->getDeadline() >= $now
+                && $assignment->getDeadline() <= $dueSoonLimit
+                && $assignment->getStatus() !== 'completed';
+        });
+
         $upcomingAssignments = array_filter($assignments, function ($assignment) use ($now) {
             return $assignment->getDeadline() >= $now && $assignment->getStatus() !== 'completed';
         });
 
         usort($upcomingAssignments, function ($a, $b) {
+            return $a->getDeadline() <=> $b->getDeadline();
+        });
+
+        usort($dueSoonAssignments, function ($a, $b) {
+            return $a->getDeadline() <=> $b->getDeadline();
+        });
+
+        usort($overdueAssignments, function ($a, $b) {
             return $a->getDeadline() <=> $b->getDeadline();
         });
 
@@ -63,7 +78,11 @@ final class DashboardController extends AbstractController
             'inProgressCount' => count($inProgressAssignments),
             'completedCount' => count($completedAssignments),
             'overdueCount' => count($overdueAssignments),
+            'dueSoonCount' => count($dueSoonAssignments),
             'upcomingAssignments' => array_slice($upcomingAssignments, 0, 5),
+            'dueSoonAssignments' => array_slice($dueSoonAssignments, 0, 5),
+            'overdueAssignments' => array_slice($overdueAssignments, 0, 5),
+
         ]);
     }
 }

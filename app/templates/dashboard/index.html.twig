@@ -59,7 +59,7 @@
 
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         gap: 18px;
         margin-bottom: 30px;
     }
@@ -69,6 +69,7 @@
         padding: 22px;
         border-radius: 14px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid transparent;
     }
 
     .stat-card h3 {
@@ -85,18 +86,30 @@
         font-weight: bold;
     }
 
+    .stat-warning {
+        border-left-color: #f59e0b;
+    }
+
+    .stat-danger {
+        border-left-color: #dc2626;
+    }
+
+    .stat-success {
+        border-left-color: #16a34a;
+    }
+
     .section-card {
         background: #ffffff;
         padding: 24px;
         border-radius: 14px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 24px;
     }
 
     .quick-actions {
         display: flex;
         flex-wrap: wrap;
         gap: 12px;
-        margin-bottom: 24px;
     }
 
     .btn {
@@ -125,16 +138,13 @@
     }
 
     .section-title {
-        border-top: 1px solid #e5e7eb;
-        padding-top: 24px;
-        margin-top: 10px;
         margin-bottom: 18px;
     }
 
     .section-title h2 {
         margin: 0;
         color: #111827;
-        font-size: 26px;
+        font-size: 24px;
     }
 
     .section-title p {
@@ -144,7 +154,7 @@
 
     .empty-state {
         color: #6b7280;
-        padding: 24px 0;
+        padding: 18px 0;
     }
 
     .assignment-list {
@@ -222,6 +232,16 @@
         color: #166534;
     }
 
+    .badge-overdue {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .badge-due-soon {
+        background: #ffedd5;
+        color: #9a3412;
+    }
+
     .badge-high {
         background: #fee2e2;
         color: #991b1b;
@@ -262,6 +282,10 @@
     }
 </style>
 
+{% set overdueList = overdueAssignments|default([]) %}
+{% set dueSoonList = dueSoonAssignments|default([]) %}
+{% set upcomingList = upcomingAssignments|default([]) %}
+
 <div class="dashboard-container">
     <div class="dashboard-header">
         <div class="dashboard-topbar">
@@ -298,12 +322,17 @@
             <p>{{ inProgressCount }}</p>
         </div>
 
-        <div class="stat-card">
+        <div class="stat-card stat-success">
             <h3>Completed</h3>
             <p>{{ completedCount }}</p>
         </div>
 
-        <div class="stat-card">
+        <div class="stat-card stat-warning">
+            <h3>Due Soon</h3>
+            <p>{{ dueSoonCount|default(0) }}</p>
+        </div>
+
+        <div class="stat-card stat-danger">
             <h3>Overdue</h3>
             <p>{{ overdueCount }}</p>
         </div>
@@ -316,19 +345,119 @@
             <a href="{{ path('app_assignment_new') }}" class="btn">Add Assignment</a>
             <a href="{{ path('app_assignment_index') }}" class="btn btn-secondary">View Assignments</a>
         </div>
+    </div>
 
+    <div class="section-card">
+        <div class="section-title">
+            <h2>Overdue Assignments</h2>
+            <p>Assignments whose deadlines have passed and are not completed.</p>
+        </div>
+
+        {% if overdueList is empty %}
+            <div class="empty-state">
+                No overdue assignments. Good job staying on track.
+            </div>
+        {% else %}
+            <ul class="assignment-list">
+                {% for assignment in overdueList %}
+                    <li>
+                        <div>
+                            <div class="assignment-title">{{ assignment.title }}</div>
+                            <div class="assignment-meta">
+                                {{ assignment.course.name }}
+                                {% if assignment.course.code %}
+                                    ({{ assignment.course.code }})
+                                {% endif %}
+                                <br>
+                                Deadline: {{ assignment.deadline|date('d M Y, H:i') }}
+
+                                <span class="badge badge-overdue">Overdue</span>
+
+                                <span class="badge badge-{{ assignment.status }}">
+                                    {{ assignment.status|replace({'_': ' '}) }}
+                                </span>
+
+                                {% if assignment.priority %}
+                                    <span class="badge badge-{{ assignment.priority }}">
+                                        {{ assignment.priority }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="assignment-actions">
+                            <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}" class="small-btn">
+                                View
+                            </a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">
+            <h2>Due Soon</h2>
+            <p>Assignments due within the next 3 days.</p>
+        </div>
+
+        {% if dueSoonList is empty %}
+            <div class="empty-state">
+                No assignments due soon.
+            </div>
+        {% else %}
+            <ul class="assignment-list">
+                {% for assignment in dueSoonList %}
+                    <li>
+                        <div>
+                            <div class="assignment-title">{{ assignment.title }}</div>
+                            <div class="assignment-meta">
+                                {{ assignment.course.name }}
+                                {% if assignment.course.code %}
+                                    ({{ assignment.course.code }})
+                                {% endif %}
+                                <br>
+                                Due: {{ assignment.deadline|date('d M Y, H:i') }}
+
+                                <span class="badge badge-due-soon">Due soon</span>
+
+                                <span class="badge badge-{{ assignment.status }}">
+                                    {{ assignment.status|replace({'_': ' '}) }}
+                                </span>
+
+                                {% if assignment.priority %}
+                                    <span class="badge badge-{{ assignment.priority }}">
+                                        {{ assignment.priority }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="assignment-actions">
+                            <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}" class="small-btn">
+                                View
+                            </a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="section-card">
         <div class="section-title">
             <h2>Upcoming Assignments</h2>
             <p>Your nearest pending or in-progress deadlines.</p>
         </div>
 
-        {% if upcomingAssignments is empty %}
+        {% if upcomingList is empty %}
             <div class="empty-state">
                 No upcoming assignments yet. Once you add courses and assignments, they will appear here.
             </div>
         {% else %}
             <ul class="assignment-list">
-                {% for assignment in upcomingAssignments %}
+                {% for assignment in upcomingList %}
                     <li>
                         <div>
                             <div class="assignment-title">{{ assignment.title }}</div>
