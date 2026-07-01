@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\NotificationRepository;
+use App\Service\DeadlineNotificationService;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,13 +15,18 @@ final class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
     #[IsGranted('ROLE_USER')]
-    public function index(): Response
-    {
+    public function index(
+        DeadlineNotificationService $deadlineNotificationService,
+        NotificationRepository $notificationRepository
+    ): Response {
         $user = $this->getUser();
 
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException('You must be logged in.');
         }
+
+        // Generate in-app notifications for due soon and overdue assignments.
+        $deadlineNotificationService->generateForUser($user);
 
         $courses = $user->getCourses();
         $assignments = [];
@@ -71,6 +78,17 @@ final class DashboardController extends AbstractController
             return $a->getDeadline() <=> $b->getDeadline();
         });
 
+        $recentNotifications = $notificationRepository->findBy(
+            ['user' => $user],
+            ['createdAt' => 'DESC'],
+            5
+        );
+
+        $unreadNotificationCount = $notificationRepository->count([
+            'user' => $user,
+            'status' => 'unread',
+        ]);
+
         return $this->render('dashboard/index.html.twig', [
             'totalCourses' => count($courses),
             'totalAssignments' => count($assignments),
@@ -82,7 +100,8 @@ final class DashboardController extends AbstractController
             'upcomingAssignments' => array_slice($upcomingAssignments, 0, 5),
             'dueSoonAssignments' => array_slice($dueSoonAssignments, 0, 5),
             'overdueAssignments' => array_slice($overdueAssignments, 0, 5),
-
+            'recentNotifications' => $recentNotifications,
+            'unreadNotificationCount' => $unreadNotificationCount,
         ]);
     }
 }

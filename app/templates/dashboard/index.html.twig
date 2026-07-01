@@ -151,7 +151,12 @@
         margin: 6px 0 0;
         color: #6b7280;
     }
-
+    .section-title-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
     .empty-state {
         color: #6b7280;
         padding: 18px 0;
@@ -257,6 +262,52 @@
         color: #374151;
     }
 
+    .notification-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .notification-list li {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 16px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .notification-list li:last-child {
+        border-bottom: none;
+    }
+
+    .notification-title {
+        font-weight: bold;
+        color: #111827;
+        margin-bottom: 5px;
+    }
+
+    .notification-message {
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .notification-time {
+        color: #9ca3af;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    .notification-status {
+        display: inline-block;
+        background: #fef3c7;
+        color: #92400e;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: capitalize;
+    }
     @media (max-width: 700px) {
         .dashboard-topbar {
             flex-direction: column;
@@ -344,7 +395,55 @@
             <a href="{{ path('app_course_index') }}" class="btn btn-secondary">View Courses</a>
             <a href="{{ path('app_assignment_new') }}" class="btn">Add Assignment</a>
             <a href="{{ path('app_assignment_index') }}" class="btn btn-secondary">View Assignments</a>
+            <a href="{{ path('app_notification_index') }}" class="btn btn-secondary">
+                Notifications
+                {% if unreadNotificationCount|default(0) > 0 %}
+                    ({{ unreadNotificationCount }})
+                {% endif %}
+            </a>
         </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title section-title-flex">
+        <div>
+            <h2>Recent Notifications</h2>
+            <p>System alerts for due soon and overdue assignments.</p>
+        </div>
+
+        <a href="{{ path('app_notification_index') }}" class="small-btn">View All</a>
+    </div>
+
+        {% if recentNotifications is empty %}
+            <div class="empty-state">
+                No notifications yet. Deadline alerts will appear here once assignments are due soon or overdue.
+            </div>
+        {% else %}
+            <ul class="notification-list">
+                {% for notification in recentNotifications %}
+                    <li>
+                        <div>
+                            <div class="notification-title">{{ notification.title }}</div>
+                            <div class="notification-message">{{ notification.message }}</div>
+                            <div class="notification-time">
+                                {{ notification.createdAt ? notification.createdAt|date('d M Y, H:i') : '' }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="notification-status">{{ notification.status }}</span>
+
+                            {% if notification.assignment %}
+                                <br><br>
+                                <a href="{{ path('app_assignment_show', {'id': notification.assignment.id}) }}" class="small-btn">
+                                    View
+                                </a>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     </div>
 
     <div class="section-card">
