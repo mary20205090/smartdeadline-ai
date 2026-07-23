@@ -114,7 +114,7 @@
         .page-header { flex-direction: column; align-items: stretch; }
         .btn { text-align: center; }
         .card { overflow-x: auto; }
-        table { min-width: 760px; }
+        table { min-width: 860px; }
     }
 </style>
 
@@ -143,6 +143,7 @@
                         <th>Deadline</th>
                         <th>Status</th>
                         <th>Priority</th>
+                        <th>Risk</th>
                         <th style="width: 230px;">Actions</th>
                     </tr>
                 </thead>
@@ -171,6 +172,21 @@
                                 N/A
                             {% endif %}
                         </td>
+                        <td>
+                            {% set prediction = predictionsByAssignmentId[assignment.id]|default(null) %}
+
+                            {% if prediction %}
+                                <span class="badge badge-{{ prediction.riskLevel }}">
+                                    {{ prediction.riskLevel }}
+                                </span>
+                                {% if prediction.probability is not null %}
+                                    <br><small>{{ (prediction.probability * 100)|round }}%</small>
+                                {% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+
                         <td class="actions">
                             <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}" class="action-btn action-view">
                                 View

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\NotificationRepository;
 use App\Service\DeadlineNotificationService;
+use App\Service\AssignmentRiskPredictionService;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +18,8 @@ final class DashboardController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function index(
         DeadlineNotificationService $deadlineNotificationService,
-        NotificationRepository $notificationRepository
+        NotificationRepository $notificationRepository,
+        AssignmentRiskPredictionService $assignmentRiskPredictionService
     ): Response {
         $user = $this->getUser();
 
@@ -89,6 +91,31 @@ final class DashboardController extends AbstractController
             'status' => 'unread',
         ]);
 
+        $predictionsByAssignmentId = [];
+        $highRiskAssignments = [];
+        $mediumRiskAssignments = [];
+        $lowRiskAssignments = [];
+
+        foreach ($assignments as $assignment) {
+            $prediction = $assignmentRiskPredictionService->predictAndSave($assignment);
+
+            if ($assignment->getId() !== null) {
+                $predictionsByAssignmentId[$assignment->getId()] = $prediction;
+            }
+
+            if ($prediction->getRiskLevel() === 'high') {
+                $highRiskAssignments[] = $assignment;
+            } elseif ($prediction->getRiskLevel() === 'medium') {
+                $mediumRiskAssignments[] = $assignment;
+            } else {
+                $lowRiskAssignments[] = $assignment;
+            }
+        }
+
+        usort($highRiskAssignments, function ($a, $b) {
+            return $a->getDeadline() <=> $b->getDeadline();
+        });
+
         return $this->render('dashboard/index.html.twig', [
             'totalCourses' => count($courses),
             'totalAssignments' => count($assignments),
@@ -102,6 +129,11 @@ final class DashboardController extends AbstractController
             'overdueAssignments' => array_slice($overdueAssignments, 0, 5),
             'recentNotifications' => $recentNotifications,
             'unreadNotificationCount' => $unreadNotificationCount,
+            'highRiskCount' => count($highRiskAssignments),
+            'mediumRiskCount' => count($mediumRiskAssignments),
+            'lowRiskCount' => count($lowRiskAssignments),
+            'highRiskAssignments' => array_slice($highRiskAssignments, 0, 5),
+            'predictionsByAssignmentId' => $predictionsByAssignmentId,
         ]);
     }
 }

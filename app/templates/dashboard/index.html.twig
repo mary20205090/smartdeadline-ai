@@ -387,6 +387,20 @@
             <h3>Overdue</h3>
             <p>{{ overdueCount }}</p>
         </div>
+        <div class="stat-card stat-danger">
+            <h3>High Risk</h3>
+            <p>{{ highRiskCount }}</p>
+        </div>
+
+        <div class="stat-card stat-warning">
+            <h3>Medium Risk</h3>
+            <p>{{ mediumRiskCount }}</p>
+        </div>
+
+        <div class="stat-card stat-success">
+            <h3>Low Risk</h3>
+            <p>{{ lowRiskCount }}</p>
+        </div>
     </div>
 
     <div class="section-card">
@@ -407,6 +421,57 @@
     <div class="section-card">
         <div class="section-title section-title-flex">
         <div>
+        
+        <div class="section-card">
+            <div class="section-title">
+                <h2>High Risk Assignments</h2>
+                <p>Assignments predicted to have a high risk of missing the deadline.</p>
+            </div>
+
+            {% if highRiskAssignments is empty %}
+                <div class="empty-state">
+                    No high-risk assignments detected.
+                </div>
+            {% else %}
+                <ul class="assignment-list">
+                    {% for assignment in highRiskAssignments %}
+                        {% set prediction = predictionsByAssignmentId[assignment.id]|default(null) %}
+
+                        <li>
+                            <div>
+                                <div class="assignment-title">
+                                    {{ assignment.title }}
+                                    {% if prediction %}
+                                        <span class="badge badge-{{ prediction.riskLevel }}">
+                                            {{ prediction.riskLevel }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="assignment-meta">
+                                    {{ assignment.course.name }}
+                                    {% if assignment.course.code %}
+                                        ({{ assignment.course.code }})
+                                    {% endif %}
+                                    <br>
+                                    Deadline: {{ assignment.deadline|date('d M Y, H:i') }}
+                                    {% if prediction and prediction.probability is not null %}
+                                        <br>
+                                        Confidence: {{ (prediction.probability * 100)|round }}%
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="assignment-actions">
+                                <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}" class="small-btn">
+                                    View
+                                </a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
             <h2>Recent Notifications</h2>
             <p>System alerts for due soon and overdue assignments.</p>
         </div>

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Service\AssignmentRiskPredictionService;
 use App\Service\ActivityLogService;
 use App\Entity\Assignment;
 use App\Entity\User;
@@ -19,7 +20,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AssignmentController extends AbstractController
 {
     #[Route(name: 'app_assignment_index', methods: ['GET'])]
-    public function index(AssignmentRepository $assignmentRepository): Response
+    public function index(
+        AssignmentRepository $assignmentRepository,
+        AssignmentRiskPredictionService $assignmentRiskPredictionService,
+        EntityManagerInterface $entityManager
+    ): Response
     {
         $user = $this->getCurrentUser();
 
@@ -31,16 +36,32 @@ final class AssignmentController extends AbstractController
             ->getQuery()
             ->getResult();
 
+        
+        $predictionsByAssignmentId = [];
+
+        foreach ($assignments as $assignment) {
+            $prediction = $assignmentRiskPredictionService->predictAndSave($assignment);
+
+            if ($assignment->getId() !== null) {
+                $predictionsByAssignmentId[$assignment->getId()] = $prediction;
+            }
+        }
+
+        $entityManager->flush();
+
         return $this->render('assignment/index.html.twig', [
             'assignments' => $assignments,
+            'predictionsByAssignmentId' => $predictionsByAssignmentId,
         ]);
+
     }
 
     #[Route('/new', name: 'app_assignment_new', methods: ['GET', 'POST'])]
     public function new(
         Request $request,
         EntityManagerInterface $entityManager,
-        ActivityLogService $activityLogService
+        ActivityLogService $activityLogService,
+        AssignmentRiskPredictionService $assignmentRiskPredictionService
     ): Response
     {
         $assignment = new Assignment();
@@ -56,6 +77,8 @@ final class AssignmentController extends AbstractController
 
             $entityManager->persist($assignment);
             $activityLogService->logAssignmentEvent($assignment, 'assignment_created');
+            $assignmentRiskPredictionService->predictAndSave($assignment);
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_assignment_index', [], Response::HTTP_SEE_OTHER);
@@ -68,12 +91,18 @@ final class AssignmentController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_assignment_show', methods: ['GET'])]
-    public function show(Assignment $assignment): Response
+    public function show(
+        Assignment $assignment,
+        AssignmentRiskPredictionService $assignmentRiskPredictionService
+    ): Response
     {
         $this->denyAccessToAssignmentOwnerOnly($assignment);
 
+        $prediction = $assignmentRiskPredictionService->predictAndSave($assignment);
+
         return $this->render('assignment/show.html.twig', [
             'assignment' => $assignment,
+            'prediction' => $prediction,
         ]);
     }
 
@@ -107,7 +136,8 @@ final class AssignmentController extends AbstractController
         Request $request,
         Assignment $assignment,
         EntityManagerInterface $entityManager,
-        ActivityLogService $activityLogService
+        ActivityLogService $activityLogService,
+        AssignmentRiskPredictionService $assignmentRiskPredictionService
     ): Response
     {
         $this->denyAccessToAssignmentOwnerOnly($assignment);
@@ -116,6 +146,7 @@ final class AssignmentController extends AbstractController
             if ($assignment->getStatus() === 'pending') {
                 $assignment->setStatus('in_progress');
                 $activityLogService->logAssignmentEvent($assignment, 'assignment_started');
+                $assignmentRiskPredictionService->predictAndSave($assignment);
 
                 $entityManager->flush();
             }
@@ -129,7 +160,8 @@ final class AssignmentController extends AbstractController
         Request $request,
         Assignment $assignment,
         EntityManagerInterface $entityManager,
-        ActivityLogService $activityLogService
+        ActivityLogService $activityLogService,
+        AssignmentRiskPredictionService $assignmentRiskPredictionService
     ): Response
     {
         $this->denyAccessToAssignmentOwnerOnly($assignment);
@@ -137,9 +169,10 @@ final class AssignmentController extends AbstractController
         if ($this->isCsrfTokenValid('complete'.$assignment->getId(), $request->getPayload()->getString('_token'))) {
             if ($assignment->getStatus() !== 'completed') {
                 $assignment->setStatus('completed');
-                $assignment->setCompletedAt(new \DateTimeImmutable());
+                $assignment->setCompletedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
 
                 $activityLogService->logAssignmentEvent($assignment, 'assignment_completed');
+                $assignmentRiskPredictionService->predictAndSave($assignment);
 
                 $entityManager->flush();
             }
