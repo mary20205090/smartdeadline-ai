@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Service\ActivityLogService;
 use App\Entity\Assignment;
 use App\Entity\User;
 use App\Form\AssignmentType;
@@ -36,7 +37,11 @@ final class AssignmentController extends AbstractController
     }
 
     #[Route('/new', name: 'app_assignment_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ActivityLogService $activityLogService
+    ): Response
     {
         $assignment = new Assignment();
 
@@ -50,6 +55,7 @@ final class AssignmentController extends AbstractController
             $this->denyAccessToAssignmentOwnerOnly($assignment);
 
             $entityManager->persist($assignment);
+            $activityLogService->logAssignmentEvent($assignment, 'assignment_created');
             $entityManager->flush();
 
             return $this->redirectToRoute('app_assignment_index', [], Response::HTTP_SEE_OTHER);
@@ -97,13 +103,20 @@ final class AssignmentController extends AbstractController
     }
 
     #[Route('/{id}/start', name: 'app_assignment_start', methods: ['POST'])]
-    public function start(Request $request, Assignment $assignment, EntityManagerInterface $entityManager): Response
+    public function start(
+        Request $request,
+        Assignment $assignment,
+        EntityManagerInterface $entityManager,
+        ActivityLogService $activityLogService
+    ): Response
     {
         $this->denyAccessToAssignmentOwnerOnly($assignment);
 
         if ($this->isCsrfTokenValid('start'.$assignment->getId(), $request->getPayload()->getString('_token'))) {
-            if ($assignment->getStatus() !== 'completed') {
+            if ($assignment->getStatus() === 'pending') {
                 $assignment->setStatus('in_progress');
+                $activityLogService->logAssignmentEvent($assignment, 'assignment_started');
+
                 $entityManager->flush();
             }
         }
@@ -112,15 +125,25 @@ final class AssignmentController extends AbstractController
     }
     
     #[Route('/{id}/complete', name: 'app_assignment_complete', methods: ['POST'])]
-    public function complete(Request $request, Assignment $assignment, EntityManagerInterface $entityManager): Response
+    public function complete(
+        Request $request,
+        Assignment $assignment,
+        EntityManagerInterface $entityManager,
+        ActivityLogService $activityLogService
+    ): Response
     {
         $this->denyAccessToAssignmentOwnerOnly($assignment);
 
         if ($this->isCsrfTokenValid('complete'.$assignment->getId(), $request->getPayload()->getString('_token'))) {
-            $assignment->setStatus('completed');
-            $assignment->setCompletedAt(new \DateTimeImmutable());
+            if ($assignment->getStatus() !== 'completed') {
+                $assignment->setStatus('completed');
+                $assignment->setCompletedAt(new \DateTimeImmutable());
 
-            $entityManager->flush();
+                $activityLogService->logAssignmentEvent($assignment, 'assignment_completed');
+
+                $entityManager->flush();
+            }
+
         }
 
         return $this->redirectToRoute('app_assignment_index', [], Response::HTTP_SEE_OTHER);
