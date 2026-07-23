@@ -50,3 +50,6 @@
 
 # Embedded web-server pid file
 /.web-server-pid
+ml-service/.venv/
+ml-service/__pycache__/
+ml-service/*.pyc

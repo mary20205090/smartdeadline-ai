@@ -77,7 +77,7 @@ final class AssignmentController extends AbstractController
 
             $entityManager->persist($assignment);
             $activityLogService->logAssignmentEvent($assignment, 'assignment_created');
-            $assignmentRiskPredictionService->predictAndSave($assignment);
+            $assignmentRiskPredictionService->predictAndSave($assignment, true);
 
             $entityManager->flush();
 
@@ -107,7 +107,12 @@ final class AssignmentController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_assignment_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Assignment $assignment, EntityManagerInterface $entityManager): Response
+    public function edit(
+        Request $request,
+        Assignment $assignment,
+        EntityManagerInterface $entityManager,
+        AssignmentRiskPredictionService $assignmentRiskPredictionService
+    ): Response
     {
         $this->denyAccessToAssignmentOwnerOnly($assignment);
 
@@ -119,6 +124,8 @@ final class AssignmentController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->denyAccessToAssignmentOwnerOnly($assignment);
+
+            $assignmentRiskPredictionService->predictAndSave($assignment, true);
 
             $entityManager->flush();
 
@@ -146,7 +153,7 @@ final class AssignmentController extends AbstractController
             if ($assignment->getStatus() === 'pending') {
                 $assignment->setStatus('in_progress');
                 $activityLogService->logAssignmentEvent($assignment, 'assignment_started');
-                $assignmentRiskPredictionService->predictAndSave($assignment);
+                $assignmentRiskPredictionService->predictAndSave($assignment, true);
 
                 $entityManager->flush();
             }
@@ -172,7 +179,7 @@ final class AssignmentController extends AbstractController
                 $assignment->setCompletedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
 
                 $activityLogService->logAssignmentEvent($assignment, 'assignment_completed');
-                $assignmentRiskPredictionService->predictAndSave($assignment);
+                $assignmentRiskPredictionService->predictAndSave($assignment, true);
 
                 $entityManager->flush();
             }
