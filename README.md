@@ -267,6 +267,6 @@ A typical demonstration flow:
 
 ## Author
 
-Mary Kasee Mutua  
+Mary Mutua  
 Bachelor of Information Technology  
 Mount Kenya University
