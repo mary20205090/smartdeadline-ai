@@ -20,6 +20,10 @@ class AssignmentRiskPredictionService
 
     public function predictAndSave(Assignment $assignment, bool $forceRefresh = false): Prediction
     {
+        if ($assignment->getStatus() === 'completed') {
+            return $this->saveCompletedPrediction($assignment);
+        }
+
         if (!$forceRefresh) {
             $recentPrediction = $this->getRecentPrediction($assignment);
 
@@ -56,6 +60,31 @@ class AssignmentRiskPredictionService
         $prediction->setRiskLevel($riskLevel);
         $prediction->setProbability($probability);
         $prediction->setModelName($modelName);
+        $prediction->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
+
+        $this->entityManager->flush();
+
+        return $prediction;
+    }
+
+    private function saveCompletedPrediction(Assignment $assignment): Prediction
+    {
+        $prediction = $this->entityManager
+            ->getRepository(Prediction::class)
+            ->findOneBy(
+                ['assignment' => $assignment],
+                ['createdAt' => 'DESC']
+            );
+
+        if (!$prediction) {
+            $prediction = new Prediction();
+            $prediction->setAssignment($assignment);
+            $this->entityManager->persist($prediction);
+        }
+
+        $prediction->setRiskLevel('low');
+        $prediction->setProbability(0.05);
+        $prediction->setModelName(self::ML_MODEL_NAME);
         $prediction->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
 
         $this->entityManager->flush();
