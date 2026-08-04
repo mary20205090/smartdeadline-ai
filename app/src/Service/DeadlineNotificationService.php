@@ -10,13 +10,14 @@ use Doctrine\ORM\EntityManagerInterface;
 class DeadlineNotificationService
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly AssignmentRiskPredictionService $assignmentRiskPredictionService
     ) {
     }
 
     public function generateForUser(User $user): void
     {
-        $now = new \DateTimeImmutable();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
         $dueSoonLimit = $now->modify('+3 days');
 
         foreach ($user->getCourses() as $course) {
@@ -36,11 +37,7 @@ class DeadlineNotificationService
                             $assignment->getDeadline()->format('d M Y, H:i')
                         )
                     );
-
-                    continue;
-                }
-
-                if ($assignment->getDeadline() <= $dueSoonLimit) {
+                } elseif ($assignment->getDeadline() <= $dueSoonLimit) {
                     $this->createNotificationIfMissing(
                         user: $user,
                         assignment: $assignment,
@@ -49,6 +46,20 @@ class DeadlineNotificationService
                             '%s is due soon on %s.',
                             $assignment->getTitle(),
                             $assignment->getDeadline()->format('d M Y, H:i')
+                        )
+                    );
+                }
+
+                $prediction = $this->assignmentRiskPredictionService->predictAndSave($assignment);
+
+                if ($prediction->getRiskLevel() === 'high') {
+                    $this->createNotificationIfMissing(
+                        user: $user,
+                        assignment: $assignment,
+                        title: 'AI Risk Alert',
+                        message: sprintf(
+                            '%s is predicted as high risk of missing the deadline. Please review it and take action.',
+                            $assignment->getTitle()
                         )
                     );
                 }
@@ -83,7 +94,7 @@ class DeadlineNotificationService
         $notification->setMessage($message);
         $notification->setChannel('in_app');
         $notification->setStatus('unread');
-        $notification->setCreatedAt(new \DateTimeImmutable());
+        $notification->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
 
         $this->entityManager->persist($notification);
     }
