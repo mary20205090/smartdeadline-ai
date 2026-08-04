@@ -104,7 +104,27 @@ Open `.env.local` and update the database connection:
 DATABASE_URL="mysql://smartdeadline_user:YOUR_PASSWORD@127.0.0.1:3306/smartdeadline_ai?serverVersion=8.0&charset=utf8mb4"
 ```
 
-Important: `.env.local` should not be committed to GitHub because it contains local database credentials.
+Generate and set a local Symfony app secret:
+
+```bash
+openssl rand -hex 32
+```
+
+If the command prints nothing in your terminal, use PHP instead:
+
+```bash
+php -r 'echo bin2hex(random_bytes(32)).PHP_EOL;'
+```
+
+Copy the generated value into `.env.local`:
+
+```env
+APP_SECRET=PASTE_GENERATED_SECRET_HERE
+```
+
+`APP_SECRET` is required because Symfony uses it to sign security-sensitive values such as CSRF tokens and other framework tokens. Keep it private, use a different value for each environment, and do not leave it empty.
+
+Important: `.env.local` should not be committed to GitHub because it contains local secrets such as database credentials and `APP_SECRET`.
 
 ## 7. Install Symfony Dependencies
 
@@ -413,7 +433,8 @@ git push
 
 - Use Doctrine migrations to create and update database tables.
 - Use Beekeeper or MySQL CLI only to inspect data, not to manually design tables.
-- Keep `.env.local` private and uncommitted.
+- Keep `.env.local` private and uncommitted because it contains database credentials and `APP_SECRET`.
+- Keep `APP_SECRET` set to a strong random value in every local or production environment. Do not commit the real value to Git.
 - Keep `ml-service/.venv/` private and uncommitted.
 - Commit migration files because they allow the database schema to be recreated on another machine.
 - Completed assignments are automatically treated as low risk.

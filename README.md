@@ -162,6 +162,27 @@ Configure database in:
 app/.env.local
 ```
 
+Set a local Symfony app secret in the same file:
+
+```bash
+cd app
+openssl rand -hex 32
+```
+
+If that command prints nothing in your terminal, use:
+
+```bash
+php -r 'echo bin2hex(random_bytes(32)).PHP_EOL;'
+```
+
+Copy the generated value into:
+
+```env
+APP_SECRET=PASTE_GENERATED_SECRET_HERE
+```
+
+`APP_SECRET` protects Symfony-signed values such as CSRF tokens and other framework security tokens. Keep the real value only in `.env.local` or server secrets, never in committed files.
+
 Run migrations:
 
 ```bash
@@ -259,7 +280,8 @@ A typical demonstration flow:
 
 ## Important Notes
 
-- `.env.local` should not be committed.
+- `.env.local` should not be committed because it contains local database credentials and `APP_SECRET`.
+- `APP_SECRET` must be a strong random value and should be different for each environment.
 - `ml-service/.venv/` should not be committed.
 - Completed assignments are automatically treated as low risk.
 - The ML model name saved in the database is `decision_tree_model_v1`.
