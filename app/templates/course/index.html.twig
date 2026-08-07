@@ -24,6 +24,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>S/N</th>
                             <th>Course Name</th>
                             <th>Code</th>
                             <th>Date Added</th>
@@ -33,6 +34,7 @@
                     <tbody>
                     {% for course in courses %}
                         <tr>
+                            <td class="serial-cell">{{ loop.index }}</td>
                             <td><strong>{{ course.name }}</strong></td>
                             <td>{{ course.code ?: 'N/A' }}</td>
                             <td>{{ course.createdAt ? course.createdAt|date('d M Y, H:i') : '' }}</td>

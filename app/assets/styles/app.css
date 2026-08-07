@@ -26,6 +26,8 @@ body {
     background: var(--bg);
     color: var(--text);
     font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 a {
@@ -131,6 +133,30 @@ a {
     overflow-wrap: anywhere;
 }
 
+.app-sidebar-user span {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.sidebar-logout {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    background: rgba(255, 210, 74, 0.16);
+    color: var(--brand-yellow);
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.sidebar-logout:hover {
+    background: var(--brand-yellow);
+    color: var(--brand-blue-dark);
+}
+
 .app-content {
     min-width: 0;
     min-height: 100vh;
@@ -165,7 +191,7 @@ a {
     display: block;
     margin-top: 3px;
     color: var(--text);
-    font-size: 21px;
+    font-size: 19px;
     line-height: 1.2;
 }
 
@@ -252,13 +278,14 @@ a {
 .page-header h1 {
     margin: 0;
     color: var(--text);
-    font-size: 30px;
+    font-size: 26px;
     line-height: 1.15;
 }
 
 .page-header p {
     margin: 8px 0 0;
     color: var(--muted);
+    font-size: 14px;
     line-height: 1.45;
 }
 
@@ -322,8 +349,8 @@ a {
     justify-content: center;
     border: 0;
     border-radius: var(--radius);
-    font-size: 14px;
-    font-weight: 900;
+    font-size: 13px;
+    font-weight: 800;
     text-decoration: none;
     cursor: pointer;
     white-space: nowrap;
@@ -340,7 +367,7 @@ a {
 .action-btn,
 .delete-button,
 .delete-trigger {
-    padding: 8px 12px;
+    padding: 7px 11px;
 }
 
 .card form > .btn-primary {
@@ -443,7 +470,7 @@ a {
     padding: 4px 9px;
     border-radius: 999px;
     font-size: 12px;
-    font-weight: 900;
+    font-weight: 800;
     text-transform: capitalize;
 }
 
@@ -486,19 +513,54 @@ table {
     border-collapse: collapse;
 }
 
+thead {
+    background: linear-gradient(90deg, var(--brand-blue-soft), #ffffff 62%, var(--brand-yellow-soft));
+}
+
 th {
-    padding: 0 0 12px;
+    padding: 14px 12px;
     border-bottom: 1px solid var(--line);
-    color: #475569;
-    font-size: 13px;
+    color: var(--brand-blue-dark);
+    font-size: 12px;
     text-align: left;
 }
 
 td {
-    padding: 14px 0;
+    padding: 16px 12px;
     border-bottom: 1px solid var(--line);
     color: var(--text);
+    font-size: 14px;
     vertical-align: top;
+}
+
+td strong {
+    font-weight: 700;
+}
+
+tbody tr {
+    background: #ffffff;
+}
+
+tbody tr:nth-child(even) {
+    background: #fbfdff;
+}
+
+tbody tr:hover {
+    background: var(--brand-sky);
+}
+
+tbody tr td:first-child {
+    border-left: 4px solid transparent;
+}
+
+tbody tr:hover td:first-child {
+    border-left-color: var(--brand-yellow);
+}
+
+.serial-cell {
+    width: 72px;
+    color: var(--brand-blue);
+    font-weight: 800;
 }
 
 tr:last-child td {
@@ -513,7 +575,7 @@ tr:last-child td {
     display: block;
     margin-bottom: 8px;
     color: #374151;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 800;
 }
 
@@ -526,7 +588,7 @@ tr:last-child td {
     border-radius: var(--radius);
     background: #ffffff;
     color: var(--text);
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .form-group textarea {
@@ -578,14 +640,14 @@ tr:last-child td {
 
 .detail-label {
     color: var(--muted);
-    font-size: 14px;
-    font-weight: 900;
+    font-size: 13px;
+    font-weight: 800;
 }
 
 .detail-value {
     max-width: 620px;
     color: var(--text);
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.45;
     text-align: right;
 }
@@ -597,21 +659,41 @@ tr:last-child td {
 }
 
 .notification-item {
+    position: relative;
     display: flex;
     justify-content: space-between;
     gap: 22px;
-    padding: 18px 0;
+    margin-bottom: 12px;
+    padding: 18px 18px 18px 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
     border-bottom: 1px solid var(--line);
+    background: linear-gradient(90deg, #ffffff, #ffffff 68%, var(--brand-blue-soft));
 }
 
 .notification-item:last-child {
-    border-bottom: 0;
+    margin-bottom: 0;
+}
+
+.notification-item::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    border-radius: var(--radius) 0 0 var(--radius);
+    background: var(--brand-yellow);
+}
+
+.notification-item:hover {
+    border-color: #cfe4fb;
+    background: linear-gradient(90deg, #ffffff, var(--brand-sky));
 }
 
 .notification-title {
     margin-bottom: 6px;
     color: var(--text);
-    font-weight: 900;
+    font-size: 15px;
+    font-weight: 800;
 }
 
 .notification-message {
@@ -623,7 +705,7 @@ tr:last-child td {
 .notification-time {
     margin-top: 6px;
     color: #98a2b3;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .notification-actions {
