@@ -3,130 +3,35 @@
 {% block title %}Register | SMARTDEADLINE AI{% endblock %}
 
 {% block body %}
-<style>
-    body {
-        margin: 0;
-        background: #f4f7fb;
-        font-family: Arial, sans-serif;
-    }
-
-    .auth-page {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 30px;
-    }
-
-    .auth-card {
-        width: 100%;
-        max-width: 460px;
-        background: #ffffff;
-        padding: 36px;
-        border-radius: 16px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-    }
-
-    .auth-card h1 {
-        margin: 0 0 10px;
-        font-size: 28px;
-        color: #111827;
-    }
-
-    .auth-card p {
-        margin: 0 0 28px;
-        color: #6b7280;
-        line-height: 1.5;
-    }
-
-    .form-group {
-        margin-bottom: 18px;
-    }
-
-    label {
-        display: block;
-        margin-bottom: 8px;
-        color: #374151;
-        font-weight: bold;
-        font-size: 14px;
-    }
-
-    input {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1px solid #d1d5db;
-        border-radius: 10px;
-        font-size: 15px;
-        box-sizing: border-box;
-    }
-
-    input:focus {
-        outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
-
-    .checkbox-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 12px 0 18px;
-        color: #374151;
-        font-size: 14px;
-    }
-
-    .checkbox-row input {
-        width: auto;
-    }
-
-    .btn-primary {
-        width: 100%;
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 13px;
-        border-radius: 10px;
-        font-weight: bold;
-        font-size: 15px;
-        cursor: pointer;
-        margin-top: 8px;
-    }
-
-    .btn-primary:hover {
-        background: #1d4ed8;
-    }
-
-    .auth-footer {
-        text-align: center;
-        margin-top: 22px;
-        color: #6b7280;
-        font-size: 14px;
-    }
-
-    .auth-footer a {
-        color: #2563eb;
-        text-decoration: none;
-        font-weight: bold;
-    }
-
-    .form-error {
-        color: #b91c1c;
-        font-size: 13px;
-        margin-top: 6px;
-    }
-
-    ul {
-        margin: 6px 0 0;
-        padding-left: 18px;
-        color: #b91c1c;
-        font-size: 13px;
-    }
-</style>
-
 <div class="auth-page">
+    <section class="auth-panel">
+        <a href="{{ path('app_login') }}" class="auth-brand">
+            <span class="app-logo">SD</span>
+            <span>
+                <strong>SMARTDEADLINE AI</strong>
+                <small>Assignment risk prediction</small>
+            </span>
+        </a>
+
+        <div class="auth-copy">
+            <p class="eyebrow">Start organized</p>
+            <h1>Build better deadline habits.</h1>
+            <p>Create a student workspace for courses, assignments, risk signals, and reminders.</p>
+        </div>
+
+        <div class="auth-highlights">
+            <span>Personal dashboard</span>
+            <span>AI predictions</span>
+            <span>Reminder ready</span>
+        </div>
+    </section>
+
     <div class="auth-card">
-        <h1>Create account</h1>
-        <p>Join SMARTDEADLINE AI to manage your courses, track assignments, and receive deadline risk alerts.</p>
+        <div class="auth-card-header">
+            <p class="eyebrow">Create workspace</p>
+            <h2>Create account</h2>
+            <p>Join SMARTDEADLINE AI to manage your courses, track assignments, and receive deadline risk alerts.</p>
+        </div>
 
         {{ form_start(registrationForm) }}
 
