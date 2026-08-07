@@ -21,13 +21,11 @@ final class NotificationController extends AbstractController
     {
         $user = $this->getCurrentUser();
 
-        $notifications = $notificationRepository->findBy(
-            ['user' => $user],
-            ['createdAt' => 'DESC']
-        );
-
         return $this->render('notification/index.html.twig', [
-            'notifications' => $notifications,
+            'notifications' => $notificationRepository->findBy(
+                ['user' => $user],
+                ['createdAt' => 'DESC']
+            ),
         ]);
     }
 

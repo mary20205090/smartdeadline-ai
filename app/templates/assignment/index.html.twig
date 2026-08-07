@@ -3,121 +3,6 @@
 {% block title %}Assignments | SMARTDEADLINE AI{% endblock %}
 
 {% block body %}
-<style>
-    body { margin: 0; background: #f4f7fb; font-family: Arial, sans-serif; }
-
-    .page-container { max-width: 1150px; margin: 40px auto; padding: 0 20px; }
-
-    .page-header {
-        display: flex; justify-content: space-between; align-items: center;
-        gap: 20px; margin-bottom: 24px;
-    }
-
-    .page-header h1 { margin: 0; color: #111827; font-size: 30px; }
-    .page-header p { margin: 8px 0 0; color: #6b7280; }
-
-    .btn {
-        display: inline-block; background: #2563eb; color: #fff;
-        padding: 10px 16px; border-radius: 8px; text-decoration: none;
-        font-weight: bold; font-size: 14px;
-    }
-
-    .btn:hover { background: #1d4ed8; }
-    .btn-secondary { background: #374151; }
-    .btn-secondary:hover { background: #1f2937; }
-
-    .card {
-        background: #fff; border-radius: 14px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.06);
-        padding: 24px;
-    }
-
-    table { width: 100%; border-collapse: collapse; }
-    th {
-        text-align: left; color: #374151; font-size: 14px;
-        padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;
-    }
-
-    td {
-        padding: 14px 0; border-bottom: 1px solid #e5e7eb;
-        color: #111827; vertical-align: top;
-    }
-
-    tr:last-child td { border-bottom: none; }
-
-    .badge {
-        display: inline-block; padding: 5px 10px; border-radius: 999px;
-        font-size: 12px; font-weight: bold; text-transform: capitalize;
-    }
-
-    .badge-pending { background: #fef3c7; color: #92400e; }
-    .badge-completed { background: #dcfce7; color: #166534; }
-    .badge-high { background: #fee2e2; color: #991b1b; }
-    .badge-medium { background: #dbeafe; color: #1e40af; }
-    .badge-low { background: #e5e7eb; color: #374151; }
-
-    .actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
-    }
-
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 32px;
-        padding: 7px 11px;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 13px;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        box-sizing: border-box;
-    }
-
-    .action-view {
-        background: #eff6ff;
-        color: #2563eb;
-    }
-
-    .action-view:hover {
-        background: #dbeafe;
-    }
-
-    .action-edit {
-        background: #eef2ff;
-        color: #4338ca;
-    }
-
-    .action-edit:hover {
-        background: #e0e7ff;
-    }
-
-    .inline-form {
-        margin: 0;
-    }
-
-    .complete-btn {
-        background: #16a34a;
-        color: #ffffff;
-    }
-
-    .complete-btn:hover {
-        background: #15803d;
-    }
-    .empty-state { text-align: center; color: #6b7280; padding: 40px 20px; }
-
-    @media (max-width: 800px) {
-        .page-header { flex-direction: column; align-items: stretch; }
-        .btn { text-align: center; }
-        .card { overflow-x: auto; }
-        table { min-width: 860px; }
-    }
-</style>
-
 <div class="page-container">
     <div class="page-header">
         <div>
@@ -125,102 +10,93 @@
             <p>Track assignment deadlines, priorities, and completion progress.</p>
         </div>
 
-        <a href="{{ path('app_assignment_new') }}" class="btn">Add Assignment</a>
+        <a href="{{ path('app_assignment_new') }}" class="btn btn-primary-yellow">Add Assignment</a>
     </div>
 
     <div class="card">
         {% if assignments is empty %}
-            <div class="empty-state">
+            <div class="empty-state centered">
                 <p>No assignments added yet.</p>
                 <a href="{{ path('app_assignment_new') }}" class="btn">Create your first assignment</a>
             </div>
         {% else %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Course</th>
-                        <th>Deadline</th>
-                        <th>Status</th>
-                        <th>Priority</th>
-                        <th>Risk</th>
-                        <th style="width: 230px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for assignment in assignments %}
-                    <tr>
-                        <td>{{ assignment.title }}</td>
-                        <td>
-                            {{ assignment.course.name }}
-                            {% if assignment.course.code %}
-                                <br><small>{{ assignment.course.code }}</small>
-                            {% endif %}
-                        </td>
-                        <td>{{ assignment.deadline ? assignment.deadline|date('d M Y, H:i') : 'N/A' }}</td>
-                        <td>
-                            <span class="badge badge-{{ assignment.status }}">
-                                {{ assignment.status }}
-                            </span>
-                        </td>
-                        <td>
-                            {% if assignment.priority %}
-                                <span class="badge badge-{{ assignment.priority }}">
-                                    {{ assignment.priority }}
-                                </span>
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% set prediction = predictionsByAssignmentId[assignment.id]|default(null) %}
-
-                            {% if prediction %}
-                                <span class="badge badge-{{ prediction.riskLevel }}">
-                                    {{ prediction.riskLevel }}
-                                </span>
-                                {% if prediction.probability is not null %}
-                                    <br><small>{{ (prediction.probability * 100)|round }}%</small>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Course</th>
+                            <th>Deadline</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Risk</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for assignment in assignments %}
+                        <tr>
+                            <td><strong>{{ assignment.title }}</strong></td>
+                            <td>
+                                {{ assignment.course.name }}
+                                {% if assignment.course.code %}
+                                    <br><small>{{ assignment.course.code }}</small>
                                 {% endif %}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
+                            </td>
+                            <td>{{ assignment.deadline ? assignment.deadline|date('d M Y, H:i') : 'N/A' }}</td>
+                            <td>
+                                <span class="badge badge-{{ assignment.status }}">
+                                    {{ assignment.status|replace({'_': ' '}) }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if assignment.priority %}
+                                    <span class="badge badge-{{ assignment.priority }}">
+                                        {{ assignment.priority }}
+                                    </span>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set prediction = predictionsByAssignmentId[assignment.id]|default(null) %}
 
-                        <td class="actions">
-                            <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}" class="action-btn action-view">
-                                View
-                            </a>
+                                {% if prediction %}
+                                    <span class="badge badge-{{ prediction.riskLevel }}">
+                                        {{ prediction.riskLevel }}
+                                    </span>
+                                    {% if prediction.probability is not null %}
+                                        <br><small>{{ (prediction.probability * 100)|round }}%</small>
+                                    {% endif %}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
 
-                            <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}" class="action-btn action-edit">
-                                Edit
-                            </a>
+                            <td>
+                                <div class="actions">
+                                    <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}" class="action-btn action-view">View</a>
+                                    <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}" class="action-btn action-edit">Edit</a>
 
-                            {% if assignment.status == 'pending' %}
-                                <form method="post" action="{{ path('app_assignment_start', {'id': assignment.id}) }}" class="inline-form">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('start' ~ assignment.id) }}">
-                                    <button type="submit" class="action-btn start-btn">
-                                        Start
-                                    </button>
-                                </form>
-                            {% elseif assignment.status == 'in_progress' %}
-                                <form method="post" action="{{ path('app_assignment_complete', {'id': assignment.id}) }}" class="inline-form">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ assignment.id) }}">
-                                    <button type="submit" class="action-btn complete-btn">
-                                        Complete
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </td>                    
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                                    {% if assignment.status == 'pending' %}
+                                        <form method="post" action="{{ path('app_assignment_start', {'id': assignment.id}) }}" class="inline-form">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('start' ~ assignment.id) }}">
+                                            <button type="submit" class="action-btn start-btn">Start</button>
+                                        </form>
+                                    {% elseif assignment.status == 'in_progress' %}
+                                        <form method="post" action="{{ path('app_assignment_complete', {'id': assignment.id}) }}" class="inline-form">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ assignment.id) }}">
+                                            <button type="submit" class="action-btn complete-btn">Complete</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
-    </div>
-
-    <div style="margin-top: 20px;">
-        <a href="{{ path('app_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
     </div>
 </div>
 {% endblock %}

@@ -2,8 +2,8 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <title>{% block title %}SMARTDEADLINE AI{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><rect width=%22128%22 height=%22128%22 rx=%2224%22 fill=%22%23004b93%22/><circle cx=%2296%22 cy=%2232%22 r=%2218%22 fill=%22%23ffd24a%22/><text y=%2278%22 x=%2222%22 font-size=%2244%22 font-family=%22Arial%22 font-weight=%22700%22 fill=%22white%22>SD</text></svg>">
         {% block stylesheets %}
         {% endblock %}
 
@@ -18,7 +18,94 @@
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
         {% endif %}
     </head>
-    <body>
-        {% block body %}{% endblock %}
+    <body class="{{ app.user ? 'app-layout' : 'public-layout' }}">
+        {% set currentRoute = app.request.attributes.get('_route') %}
+
+        {% if app.user %}
+            <div class="app-shell">
+                <aside class="app-sidebar">
+                    <a href="{{ path('app_dashboard') }}" class="app-brand">
+                        <span class="app-logo">SD</span>
+                        <span>
+                            <strong>SMARTDEADLINE AI</strong>
+                            <small>Deadline risk tracker</small>
+                        </span>
+                    </a>
+
+                    <nav class="app-nav" aria-label="Main navigation">
+                        <a href="{{ path('app_dashboard') }}" class="{{ currentRoute == 'app_dashboard' ? 'active' : '' }}">
+                            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h8V3H3v10Zm10 8h8V3h-8v18ZM3 21h8v-6H3v6Z"/></svg>
+                            Dashboard
+                        </a>
+                        <a href="{{ path('app_course_index') }}" class="{{ currentRoute starts with 'app_course' ? 'active' : '' }}">
+                            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 1 4 16.5v-11ZM6.5 5A.5.5 0 0 0 6 5.5v11a.5.5 0 0 0 .5.5H18V5H6.5ZM8 7h8v2H8V7Z"/></svg>
+                            Courses
+                        </a>
+                        <a href="{{ path('app_assignment_index') }}" class="{{ currentRoute starts with 'app_assignment' ? 'active' : '' }}">
+                            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l1 2h3v16H4V5h3l1-2Zm1.25 4A1.25 1.25 0 1 0 9.25 9.5 1.25 1.25 0 0 0 9.25 7ZM12 8v2h5V8h-5Zm-2.75 5A1.25 1.25 0 1 0 9.25 15.5 1.25 1.25 0 0 0 9.25 13ZM12 14v2h5v-2h-5Z"/></svg>
+                            Assignments
+                        </a>
+                        <a href="{{ path('app_notification_index') }}" class="{{ currentRoute starts with 'app_notification' ? 'active' : '' }}">
+                            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2.75 2.75 0 0 0 2.65-2h-5.3A2.75 2.75 0 0 0 12 22Zm7-6v2H5v-2l1.8-1.8V10a5.2 5.2 0 0 1 4.2-5.1V3h2v1.9A5.2 5.2 0 0 1 17.2 10v4.2L19 16Z"/></svg>
+                            Notifications
+                        </a>
+                    </nav>
+
+                    <div class="app-sidebar-user">
+                        <span>{{ app.user.userIdentifier }}</span>
+                        <a href="{{ path('app_logout') }}" class="sidebar-logout">
+                            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v2H5v14h9v2H3V3h11Zm3.6 5.4L22.2 13l-4.6 4.6-1.4-1.4 2.2-2.2H10v-2h8.4l-2.2-2.2 1.4-1.4Z"/></svg>
+                            Logout
+                        </a>
+                    </div>
+                </aside>
+
+                <div class="app-content">
+                    <header class="app-topbar">
+                        <div>
+                            <span class="topbar-label">Student workspace</span>
+                            <strong>
+                                {% if currentRoute == 'app_dashboard' %}
+                                    Dashboard
+                                {% elseif currentRoute starts with 'app_course' %}
+                                    Courses
+                                {% elseif currentRoute starts with 'app_assignment' %}
+                                    Assignments
+                                {% elseif currentRoute starts with 'app_notification' %}
+                                    Notifications
+                                {% else %}
+                                    SMARTDEADLINE AI
+                                {% endif %}
+                            </strong>
+                        </div>
+
+                        <div class="topbar-actions">
+                            <a href="{{ path('app_notification_index') }}" class="topbar-icon" aria-label="Open notifications" title="Notifications">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2.75 2.75 0 0 0 2.65-2h-5.3A2.75 2.75 0 0 0 12 22Zm7-6v2H5v-2l1.8-1.8V10a5.2 5.2 0 0 1 4.2-5.1V3h2v1.9A5.2 5.2 0 0 1 17.2 10v4.2L19 16Z"/></svg>
+                            </a>
+                            <a href="{{ path('app_logout') }}" class="topbar-icon logout" aria-label="Logout" title="Logout">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v2H5v14h9v2H3V3h11Zm3.6 5.4L22.2 13l-4.6 4.6-1.4-1.4 2.2-2.2H10v-2h8.4l-2.2-2.2 1.4-1.4Z"/></svg>
+                            </a>
+                        </div>
+                    </header>
+
+                    <main class="app-main">
+        {% else %}
+            <main class="public-main">
+        {% endif %}
+
+                        {% block body %}{% endblock %}
+
+                        {% if app.user %}
+                            <footer class="app-footer">
+                                &copy; {{ 'now'|date('Y') }} SMARTDEADLINE AI. Made with <span class="footer-love">💛</span> by Mary Mutua.
+                            </footer>
+                        {% endif %}
+                    </main>
+
+        {% if app.user %}
+                </div>
+            </div>
+        {% endif %}
     </body>
 </html>
