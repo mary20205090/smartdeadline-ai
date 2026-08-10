@@ -183,6 +183,15 @@ APP_SECRET=PASTE_GENERATED_SECRET_HERE
 
 `APP_SECRET` protects Symfony-signed values such as CSRF tokens and other framework security tokens. Keep the real value only in `.env.local` or server secrets, never in committed files.
 
+Configure local email delivery in `.env.local` if you want to send reminder emails:
+
+```env
+MAILER_DSN=smtp://YOUR_GMAIL_ADDRESS:YOUR_GMAIL_APP_PASSWORD@smtp.gmail.com:587
+MAILER_FROM="SMARTDEADLINE AI <YOUR_GMAIL_ADDRESS>"
+```
+
+Use a Gmail App Password, not your normal Google password. Keep the real value in `.env.local` only.
+
 Run migrations:
 
 ```bash
@@ -275,13 +284,30 @@ A typical demonstration flow:
 7. Complete an assignment
 8. Confirm completed assignment becomes low risk
 9. Check notifications
-10. View database records in Beekeeper Studio
+10. Dry-run email reminders
+11. Send reminder emails
+12. View database records in Beekeeper Studio
+```
+
+Email reminder commands:
+
+```bash
+php bin/console app:send-deadline-reminders --dry-run
+php bin/console app:send-deadline-reminders
+```
+
+To test one email account only:
+
+```bash
+php bin/console app:send-deadline-reminders --dry-run --recipient=maryposhia16@gmail.com
 ```
 
 ## Important Notes
 
 - `.env.local` should not be committed because it contains local database credentials and `APP_SECRET`.
 - `APP_SECRET` must be a strong random value and should be different for each environment.
+- Reminder emails are sent only for important deadline alerts: due soon, overdue, and AI high-risk alerts.
+- Normal actions such as creating courses or editing assignments do not send emails.
 - `ml-service/.venv/` should not be committed.
 - Completed assignments are automatically treated as low risk.
 - The ML model name saved in the database is `decision_tree_model_v1`.

@@ -126,6 +126,15 @@ APP_SECRET=PASTE_GENERATED_SECRET_HERE
 
 Important: `.env.local` should not be committed to GitHub because it contains local secrets such as database credentials and `APP_SECRET`.
 
+Optional: configure email reminders in `.env.local`:
+
+```env
+MAILER_DSN=smtp://YOUR_GMAIL_ADDRESS:YOUR_GMAIL_APP_PASSWORD@smtp.gmail.com:587
+MAILER_FROM="SMARTDEADLINE AI <YOUR_GMAIL_ADDRESS>"
+```
+
+Use a Gmail App Password for `MAILER_DSN`. Do not use your normal Google password, and do not commit `.env.local`.
+
 ## 7. Install Symfony Dependencies
 
 From inside the `app/` directory, run:
@@ -388,8 +397,32 @@ A typical lecturer/demo flow:
 7. Complete an assignment
 8. Confirm completed assignment becomes low risk
 9. Check notifications
-10. View database records in Beekeeper Studio
+10. Dry-run email reminders
+11. Send reminder emails
+12. View database records in Beekeeper Studio
 ```
+
+### Email reminder commands
+
+Run a safe dry run first:
+
+```bash
+php bin/console app:send-deadline-reminders --dry-run
+```
+
+Send pending reminder emails:
+
+```bash
+php bin/console app:send-deadline-reminders
+```
+
+Test one recipient only:
+
+```bash
+php bin/console app:send-deadline-reminders --dry-run --recipient=maryposhia16@gmail.com
+```
+
+The command sends email only for due-soon, overdue, and AI high-risk alerts. It does not email for normal course creation, assignment creation, or page views.
 
 ## 17. Project Folder Structure
 

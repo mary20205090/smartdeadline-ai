@@ -30,6 +30,18 @@ class Notification
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $sentAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $emailSentAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $emailFailedAt = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $emailError = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $emailAttempts = 0;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -125,6 +137,61 @@ class Notification
     public function setSentAt(?\DateTimeImmutable $sentAt): static
     {
         $this->sentAt = $sentAt;
+
+        return $this;
+    }
+
+    public function getEmailSentAt(): ?\DateTimeImmutable
+    {
+        return $this->emailSentAt;
+    }
+
+    public function setEmailSentAt(?\DateTimeImmutable $emailSentAt): static
+    {
+        $this->emailSentAt = $emailSentAt;
+
+        return $this;
+    }
+
+    public function getEmailFailedAt(): ?\DateTimeImmutable
+    {
+        return $this->emailFailedAt;
+    }
+
+    public function setEmailFailedAt(?\DateTimeImmutable $emailFailedAt): static
+    {
+        $this->emailFailedAt = $emailFailedAt;
+
+        return $this;
+    }
+
+    public function getEmailError(): ?string
+    {
+        return $this->emailError;
+    }
+
+    public function setEmailError(?string $emailError): static
+    {
+        $this->emailError = $emailError;
+
+        return $this;
+    }
+
+    public function getEmailAttempts(): int
+    {
+        return $this->emailAttempts;
+    }
+
+    public function setEmailAttempts(int $emailAttempts): static
+    {
+        $this->emailAttempts = $emailAttempts;
+
+        return $this;
+    }
+
+    public function incrementEmailAttempts(): static
+    {
+        $this->emailAttempts++;
 
         return $this;
     }

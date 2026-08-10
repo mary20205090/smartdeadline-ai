@@ -33,6 +33,28 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * @return User[]
+     */
+    public function findActiveEmailReminderUsers(?string $email = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('user')
+            ->andWhere('user.deletedAt IS NULL')
+            ->andWhere('user.emailNotificationsEnabled = :enabled')
+            ->andWhere('user.email IS NOT NULL')
+            ->andWhere("user.email <> ''")
+            ->setParameter('enabled', true)
+            ->orderBy('user.id', 'ASC');
+
+        if ($email !== null && $email !== '') {
+            $queryBuilder
+                ->andWhere('LOWER(user.email) = :email')
+                ->setParameter('email', mb_strtolower($email));
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */
