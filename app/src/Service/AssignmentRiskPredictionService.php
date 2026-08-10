@@ -18,6 +18,7 @@ class AssignmentRiskPredictionService
         'assignment_updated',
         'assignment_started',
         'assignment_completed',
+        'assignment_deleted',
     ];
 
     public function __construct(
@@ -58,10 +59,12 @@ class AssignmentRiskPredictionService
                 ['createdAt' => 'DESC']
             );
         $previousRiskLevel = $prediction?->getRiskLevel();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
 
         if (!$prediction) {
             $prediction = new Prediction();
             $prediction->setAssignment($assignment);
+            $prediction->setCreatedAt($now);
             $this->entityManager->persist($prediction);
         }
 
@@ -70,7 +73,7 @@ class AssignmentRiskPredictionService
         $prediction->setRiskLevel($riskLevel);
         $prediction->setProbability($probability);
         $prediction->setModelName($modelName);
-        $prediction->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
+        $prediction->setUpdatedAt($now);
 
         $this->entityManager->flush();
 
@@ -86,10 +89,12 @@ class AssignmentRiskPredictionService
                 ['createdAt' => 'DESC']
             );
         $previousRiskLevel = $prediction?->getRiskLevel();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
 
         if (!$prediction) {
             $prediction = new Prediction();
             $prediction->setAssignment($assignment);
+            $prediction->setCreatedAt($now);
             $this->entityManager->persist($prediction);
         }
 
@@ -98,7 +103,7 @@ class AssignmentRiskPredictionService
         $prediction->setRiskLevel('low');
         $prediction->setProbability(0.05);
         $prediction->setModelName(self::ML_MODEL_NAME);
-        $prediction->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
+        $prediction->setUpdatedAt($now);
 
         $this->entityManager->flush();
 
@@ -122,12 +127,14 @@ class AssignmentRiskPredictionService
             return null;
         }
 
-        if ($prediction->getCreatedAt() === null) {
+        $lastUpdatedAt = $prediction->getUpdatedAt() ?? $prediction->getCreatedAt();
+
+        if ($lastUpdatedAt === null) {
             return null;
         }
 
         $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
-        $ageInSeconds = $now->getTimestamp() - $prediction->getCreatedAt()->getTimestamp();
+        $ageInSeconds = $now->getTimestamp() - $lastUpdatedAt->getTimestamp();
 
         if ($ageInSeconds <= self::CACHE_MINUTES * 60) {
             return $prediction;
@@ -152,7 +159,15 @@ class AssignmentRiskPredictionService
 
         if ($user !== null) {
             foreach ($user->getCourses() as $course) {
+                if ($course->isDeleted()) {
+                    continue;
+                }
+
                 foreach ($course->getAssignments() as $studentAssignment) {
+                    if ($studentAssignment->isDeleted()) {
+                        continue;
+                    }
+
                     if ($studentAssignment->getStatus() !== 'completed') {
                         $pendingAssignments++;
                     }

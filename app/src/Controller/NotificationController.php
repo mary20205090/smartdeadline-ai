@@ -23,7 +23,7 @@ final class NotificationController extends AbstractController
 
         return $this->render('notification/index.html.twig', [
             'notifications' => $notificationRepository->findBy(
-                ['user' => $user],
+                ['user' => $user, 'channel' => 'in_app'],
                 ['createdAt' => 'DESC']
             ),
         ]);
@@ -37,7 +37,10 @@ final class NotificationController extends AbstractController
     ): Response {
         $this->denyAccessToNotificationOwnerOnly($notification);
 
-        if ($this->isCsrfTokenValid('read'.$notification->getId(), $request->getPayload()->getString('_token'))) {
+        if (
+            $notification->getChannel() === 'in_app'
+            && $this->isCsrfTokenValid('read'.$notification->getId(), $request->getPayload()->getString('_token'))
+        ) {
             $notification->setStatus('read');
             $entityManager->flush();
         }
@@ -56,6 +59,7 @@ final class NotificationController extends AbstractController
         if ($this->isCsrfTokenValid('read_all_notifications', $request->getPayload()->getString('_token'))) {
             $notifications = $notificationRepository->findBy([
                 'user' => $user,
+                'channel' => 'in_app',
                 'status' => 'unread',
             ]);
 

@@ -21,8 +21,12 @@ class DeadlineNotificationService
         $dueSoonLimit = $now->modify('+3 days');
 
         foreach ($user->getCourses() as $course) {
+            if ($course->isDeleted()) {
+                continue;
+            }
+
             foreach ($course->getAssignments() as $assignment) {
-                if ($assignment->getStatus() === 'completed') {
+                if ($assignment->isDeleted() || $assignment->getStatus() === 'completed') {
                     continue;
                 }
 
@@ -81,6 +85,7 @@ class DeadlineNotificationService
                 'user' => $user,
                 'assignment' => $assignment,
                 'title' => $title,
+                'channel' => 'in_app',
             ]);
 
         if ($existingNotification !== null) {

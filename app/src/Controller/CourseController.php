@@ -23,10 +23,13 @@ final class CourseController extends AbstractController
         $user = $this->getCurrentUser();
 
         return $this->render('course/index.html.twig', [
-            'courses' => $courseRepository->findBy(
-                ['user' => $user],
-                ['createdAt' => 'DESC']
-            ),
+            'courses' => $courseRepository->createQueryBuilder('course')
+                ->andWhere('course.user = :user')
+                ->andWhere('course.deletedAt IS NULL')
+                ->setParameter('user', $user)
+                ->orderBy('course.createdAt', 'DESC')
+                ->getQuery()
+                ->getResult(),
         ]);
     }
 
@@ -88,7 +91,13 @@ final class CourseController extends AbstractController
         $this->denyAccessToCourseOwnerOnly($course);
 
         if ($this->isCsrfTokenValid('delete'.$course->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($course);
+            $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
+            $course->setDeletedAt($now);
+
+            foreach ($course->getAssignments() as $assignment) {
+                $assignment->setDeletedAt($now);
+            }
+
             $entityManager->flush();
         }
 
@@ -110,7 +119,7 @@ final class CourseController extends AbstractController
     {
         $user = $this->getCurrentUser();
 
-        if ($course->getUser()?->getId() !== $user->getId()) {
+        if ($course->isDeleted() || $course->getUser()?->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException('You cannot access this course.');
         }
     }

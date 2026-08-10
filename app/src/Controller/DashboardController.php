@@ -40,11 +40,21 @@ final class DashboardController extends AbstractController
         // Generate in-app notifications for due soon and overdue assignments.
         $deadlineNotificationService->generateForUser($user);
 
-        $courses = $user->getCourses();
+        $courses = [];
         $assignments = [];
 
-        foreach ($courses as $course) {
+        foreach ($user->getCourses() as $course) {
+            if ($course->isDeleted()) {
+                continue;
+            }
+
+            $courses[] = $course;
+
             foreach ($course->getAssignments() as $assignment) {
+                if ($assignment->isDeleted()) {
+                    continue;
+                }
+
                 $assignments[] = $assignment;
             }
         }
@@ -91,13 +101,14 @@ final class DashboardController extends AbstractController
         });
 
         $recentNotifications = $notificationRepository->findBy(
-            ['user' => $user],
+            ['user' => $user, 'channel' => 'in_app'],
             ['createdAt' => 'DESC'],
             5
         );
 
         $unreadNotificationCount = $notificationRepository->count([
             'user' => $user,
+            'channel' => 'in_app',
             'status' => 'unread',
         ]);
 

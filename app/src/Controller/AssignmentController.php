@@ -31,6 +31,8 @@ final class AssignmentController extends AbstractController
         $assignments = $assignmentRepository->createQueryBuilder('assignment')
             ->innerJoin('assignment.course', 'course')
             ->andWhere('course.user = :user')
+            ->andWhere('assignment.deletedAt IS NULL')
+            ->andWhere('course.deletedAt IS NULL')
             ->setParameter('user', $user)
             ->orderBy('assignment.deadline', 'ASC')
             ->getQuery()
@@ -192,12 +194,18 @@ final class AssignmentController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_assignment_delete', methods: ['POST'])]
-    public function delete(Request $request, Assignment $assignment, EntityManagerInterface $entityManager): Response
+    public function delete(
+        Request $request,
+        Assignment $assignment,
+        EntityManagerInterface $entityManager,
+        ActivityLogService $activityLogService
+    ): Response
     {
         $this->denyAccessToAssignmentOwnerOnly($assignment);
 
         if ($this->isCsrfTokenValid('delete'.$assignment->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($assignment);
+            $assignment->setDeletedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
+            $activityLogService->logAssignmentEvent($assignment, 'assignment_deleted');
             $entityManager->flush();
         }
 
@@ -219,7 +227,11 @@ final class AssignmentController extends AbstractController
     {
         $user = $this->getCurrentUser();
 
-        if ($assignment->getCourse()?->getUser()?->getId() !== $user->getId()) {
+        if (
+            $assignment->isDeleted()
+            || $assignment->getCourse()?->isDeleted()
+            || $assignment->getCourse()?->getUser()?->getId() !== $user->getId()
+        ) {
             throw $this->createAccessDeniedException('You cannot access this assignment.');
         }
     }

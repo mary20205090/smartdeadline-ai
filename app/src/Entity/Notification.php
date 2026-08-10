@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Notification
 {
     #[ORM\Id]
@@ -32,12 +33,36 @@ class Notification
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     #[ORM\ManyToOne(inversedBy: 'notifications')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'notifications')]
     private ?Assignment $assignment = null;
+
+    public function __construct()
+    {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
+        $this->createdAt = $now;
+        $this->updatedAt = $now;
+    }
+
+    #[ORM\PrePersist]
+    public function setTimestampsOnCreate(): void
+    {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
+        $this->createdAt ??= $now;
+        $this->updatedAt ??= $now;
+    }
+
+    #[ORM\PreUpdate]
+    public function setTimestampOnUpdate(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
+    }
 
     public function getId(): ?int
     {
@@ -112,6 +137,18 @@ class Notification
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

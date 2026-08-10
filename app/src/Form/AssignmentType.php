@@ -46,6 +46,7 @@ class AssignmentType extends AbstractType
                 'query_builder' => function (CourseRepository $courseRepository) use ($user) {
                     return $courseRepository->createQueryBuilder('course')
                         ->andWhere('course.user = :user')
+                        ->andWhere('course.deletedAt IS NULL')
                         ->setParameter('user', $user)
                         ->orderBy('course.name', 'ASC');
                 },

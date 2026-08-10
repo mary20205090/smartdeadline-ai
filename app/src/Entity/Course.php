@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CourseRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Course
 {
     #[ORM\Id]
@@ -24,6 +25,12 @@ class Course
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deletedAt = null;
+
     #[ORM\ManyToOne(inversedBy: 'courses')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
@@ -37,8 +44,24 @@ class Course
     public function __construct()
     {
         $this->assignments = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
+        $this->createdAt = $now;
+        $this->updatedAt = $now;
 
+    }
+
+    #[ORM\PrePersist]
+    public function setTimestampsOnCreate(): void
+    {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
+        $this->createdAt ??= $now;
+        $this->updatedAt ??= $now;
+    }
+
+    #[ORM\PreUpdate]
+    public function setTimestampOnUpdate(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
     }
 
     public function getId(): ?int
@@ -80,6 +103,35 @@ class Course
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeImmutable $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deletedAt !== null;
     }
 
     public function getUser(): ?User

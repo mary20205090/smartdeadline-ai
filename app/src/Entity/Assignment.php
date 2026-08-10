@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AssignmentRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Assignment
 {
     #[ORM\Id]
@@ -36,6 +37,12 @@ class Assignment
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deletedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'assignments')]
     #[ORM\JoinColumn(nullable: false)]
@@ -65,9 +72,25 @@ class Assignment
         $this->predictions = new ArrayCollection();
         $this->notifications = new ArrayCollection();
 
-        $this->createdAt = new \DateTimeImmutable();
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
+        $this->createdAt = $now;
+        $this->updatedAt = $now;
         $this->status = 'pending';
 
+    }
+
+    #[ORM\PrePersist]
+    public function setTimestampsOnCreate(): void
+    {
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
+        $this->createdAt ??= $now;
+        $this->updatedAt ??= $now;
+    }
+
+    #[ORM\PreUpdate]
+    public function setTimestampOnUpdate(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
     }
 
     public function getId(): ?int
@@ -157,6 +180,35 @@ class Assignment
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeImmutable $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deletedAt !== null;
     }
 
     public function getCourse(): ?Course
