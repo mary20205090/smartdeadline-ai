@@ -48,6 +48,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $deletedAt = null;
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $emailNotificationsEnabled = true;
+
     /**
      * @var Collection<int, Course>
      */
@@ -215,6 +218,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isDeleted(): bool
     {
         return $this->deletedAt !== null;
+    }
+
+    public function isEmailNotificationsEnabled(): bool
+    {
+        return $this->emailNotificationsEnabled;
+    }
+
+    public function setEmailNotificationsEnabled(bool $emailNotificationsEnabled): static
+    {
+        $this->emailNotificationsEnabled = $emailNotificationsEnabled;
+
+        return $this;
+    }
+
+    public function canReceiveEmailNotifications(): bool
+    {
+        return !$this->isDeleted()
+            && $this->emailNotificationsEnabled
+            && $this->email !== null
+            && $this->email !== '';
     }
 
     /**

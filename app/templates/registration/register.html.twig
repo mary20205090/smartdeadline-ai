@@ -54,6 +54,12 @@
             </div>
 
             <div class="checkbox-row">
+                {{ form_widget(registrationForm.emailNotificationsEnabled) }}
+                {{ form_label(registrationForm.emailNotificationsEnabled, 'Send me email deadline reminders') }}
+            </div>
+            {{ form_errors(registrationForm.emailNotificationsEnabled) }}
+
+            <div class="checkbox-row">
                 {{ form_widget(registrationForm.agreeTerms) }}
                 {{ form_label(registrationForm.agreeTerms, 'I agree to the terms and conditions') }}
             </div>

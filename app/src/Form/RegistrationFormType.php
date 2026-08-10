@@ -22,6 +22,9 @@ class RegistrationFormType extends AbstractType
                 'label' => 'Full Name',
              ])
             ->add('email')
+            ->add('emailNotificationsEnabled', CheckboxType::class, [
+                'required' => false,
+            ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'constraints' => [
