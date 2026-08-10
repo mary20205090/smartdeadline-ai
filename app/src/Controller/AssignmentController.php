@@ -111,6 +111,7 @@ final class AssignmentController extends AbstractController
         Request $request,
         Assignment $assignment,
         EntityManagerInterface $entityManager,
+        ActivityLogService $activityLogService,
         AssignmentRiskPredictionService $assignmentRiskPredictionService
     ): Response
     {
@@ -125,6 +126,7 @@ final class AssignmentController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->denyAccessToAssignmentOwnerOnly($assignment);
 
+            $activityLogService->logAssignmentEvent($assignment, 'assignment_updated');
             $assignmentRiskPredictionService->predictAndSave($assignment, true);
 
             $entityManager->flush();

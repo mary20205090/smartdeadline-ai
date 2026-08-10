@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\ActivityLog;
 use App\Entity\Assignment;
 use App\Entity\Prediction;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,6 +13,12 @@ class AssignmentRiskPredictionService
     private const ML_MODEL_NAME = 'decision_tree_model_v1';
     private const FALLBACK_MODEL_NAME = 'decision_tree_rules_fallback_v1';
     private const CACHE_MINUTES = 60;
+    private const STUDENT_ACTIVITY_EVENTS = [
+        'assignment_created',
+        'assignment_updated',
+        'assignment_started',
+        'assignment_completed',
+    ];
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager
@@ -50,12 +57,15 @@ class AssignmentRiskPredictionService
                 ['assignment' => $assignment],
                 ['createdAt' => 'DESC']
             );
+        $previousRiskLevel = $prediction?->getRiskLevel();
 
         if (!$prediction) {
             $prediction = new Prediction();
             $prediction->setAssignment($assignment);
             $this->entityManager->persist($prediction);
         }
+
+        $this->logPredictionActivity($assignment, $previousRiskLevel, $riskLevel);
 
         $prediction->setRiskLevel($riskLevel);
         $prediction->setProbability($probability);
@@ -75,12 +85,15 @@ class AssignmentRiskPredictionService
                 ['assignment' => $assignment],
                 ['createdAt' => 'DESC']
             );
+        $previousRiskLevel = $prediction?->getRiskLevel();
 
         if (!$prediction) {
             $prediction = new Prediction();
             $prediction->setAssignment($assignment);
             $this->entityManager->persist($prediction);
         }
+
+        $this->logPredictionActivity($assignment, $previousRiskLevel, 'low');
 
         $prediction->setRiskLevel('low');
         $prediction->setProbability(0.05);
@@ -153,6 +166,10 @@ class AssignmentRiskPredictionService
                     }
 
                     foreach ($studentAssignment->getActivityLogs() as $activityLog) {
+                        if (!in_array($activityLog->getEventType(), self::STUDENT_ACTIVITY_EVENTS, true)) {
+                            continue;
+                        }
+
                         $createdAt = $activityLog->getCreatedAt();
 
                         if ($createdAt === null) {
@@ -277,5 +294,24 @@ class AssignmentRiskPredictionService
         }
 
         return ['low', round($score, 2)];
+    }
+
+    private function logPredictionActivity(Assignment $assignment, ?string $previousRiskLevel, string $newRiskLevel): void
+    {
+        $this->createActivityLog($assignment, 'prediction_generated');
+
+        if ($previousRiskLevel !== null && $previousRiskLevel !== $newRiskLevel) {
+            $this->createActivityLog($assignment, 'risk_changed_to_'.$newRiskLevel);
+        }
+    }
+
+    private function createActivityLog(Assignment $assignment, string $eventType): void
+    {
+        $activityLog = new ActivityLog();
+        $activityLog->setAssignment($assignment);
+        $activityLog->setEventType($eventType);
+        $activityLog->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
+
+        $this->entityManager->persist($activityLog);
     }
 }
