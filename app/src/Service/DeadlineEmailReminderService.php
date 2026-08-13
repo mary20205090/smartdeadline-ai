@@ -7,6 +7,7 @@ use App\Repository\NotificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class DeadlineEmailReminderService
 {
@@ -22,6 +23,7 @@ class DeadlineEmailReminderService
         private readonly NotificationRepository $notificationRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly TransportInterface $mailerTransport,
+        private readonly UrlGeneratorInterface $urlGenerator,
         private readonly string $mailerFrom
     ) {
     }
@@ -109,9 +111,18 @@ class DeadlineEmailReminderService
             ? sprintf('%s (%s)', $courseName, $courseCode)
             : $courseName;
         $theme = $this->getAlertTheme($notification);
+        $unsubscribeUrl = null;
+
+        if ($user !== null) {
+            $unsubscribeUrl = $this->urlGenerator->generate(
+                'app_email_unsubscribe',
+                ['token' => $user->ensureEmailUnsubscribeToken()],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
+        }
 
         $plainText = sprintf(
-            "Hello %s,\n\n%s\n\nAssignment: %s\nCourse: %s\nDeadline: %s\nStatus: %s\nPriority: %s\n\nAction: %s\n\nSMARTDEADLINE AI\nDeadline risk tracker",
+            "Hello %s,\n\n%s\n\nAssignment: %s\nCourse: %s\nDeadline: %s\nStatus: %s\nPriority: %s\n\nAction: %s\n\nManage email reminders: %s\n\nSMARTDEADLINE AI\nDeadline risk tracker",
             $user?->getFullName() ?: 'Student',
             $notification->getMessage(),
             $assignmentTitle,
@@ -119,7 +130,8 @@ class DeadlineEmailReminderService
             $deadline,
             $status,
             $priority,
-            $theme['action']
+            $theme['action'],
+            $unsubscribeUrl ?? 'Sign in to SMARTDEADLINE AI and open Preferences.'
         );
 
         $studentName = $this->escape($user?->getFullName() ?: 'Student');
@@ -131,6 +143,13 @@ class DeadlineEmailReminderService
         $escapedPriority = $this->escape($priority);
         $escapedAction = $this->escape($theme['action']);
         $escapedAlertTitle = $this->escape((string) $notification->getTitle());
+        $escapedUnsubscribeUrl = $unsubscribeUrl !== null ? $this->escape($unsubscribeUrl) : null;
+        $unsubscribeHtml = $escapedUnsubscribeUrl !== null
+            ? sprintf(
+                '<br><a href="%s" style="color:#0f4c81;font-weight:700;text-decoration:none;">Unsubscribe from reminder emails</a>',
+                $escapedUnsubscribeUrl
+            )
+            : '';
 
         $html = <<<HTML
             <div style="margin:0;padding:0;background:#f3f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
@@ -183,7 +202,7 @@ class DeadlineEmailReminderService
 
                         <div style="padding:16px 26px;background:#f8fbff;border-top:1px solid #dbe7f3;font-size:12px;line-height:1.5;color:#6b7b91;">
                             SMARTDEADLINE AI · Deadline risk tracker<br>
-                            You received this because email deadline reminders are enabled for your account.
+                            You received this because email deadline reminders are enabled for your account.{$unsubscribeHtml}
                         </div>
                     </div>
                 </div>

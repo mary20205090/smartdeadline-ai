@@ -162,8 +162,15 @@ class AssignmentRiskPredictionService
         $previousLateSubmissions = 0;
         $recentActivityCount = 0;
         $latestActivityDate = null;
+        $loginFrequency = 0;
 
         if ($user !== null) {
+            $loginFrequency = min(14, $user->getLoginCount());
+
+            if ($user->getLastLoginAt() !== null) {
+                $latestActivityDate = $user->getLastLoginAt();
+            }
+
             foreach ($user->getCourses() as $course) {
                 if ($course->isDeleted()) {
                     continue;
@@ -214,8 +221,6 @@ class AssignmentRiskPredictionService
         if ($latestActivityDate !== null) {
             $inactivityDays = (int) $latestActivityDate->diff($now)->format('%a');
         }
-
-        $loginFrequency = min(14, $recentActivityCount);
 
         return [
             'days_to_deadline' => $daysToDeadline,

@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Preferences | SMARTDEADLINE AI{% endblock %}
+
+{% block body %}
+<div class="settings-page">
+    <section class="page-header">
+        <div>
+            <h1>Notification Preferences</h1>
+            <p>Control how SMARTDEADLINE AI sends deadline reminders to your account.</p>
+        </div>
+    </section>
+
+    {% for message in app.flashes('success') %}
+        <div class="flash flash-success">{{ message }}</div>
+    {% endfor %}
+
+    <section class="settings-grid">
+        <article class="card settings-card">
+            <div class="settings-card-header">
+                <div>
+                    <span class="eyebrow">Email reminders</span>
+                    <h2>Deadline email alerts</h2>
+                    <p>Receive email only for due-soon, overdue, and AI high-risk assignment alerts.</p>
+                </div>
+                <span class="settings-status {{ user.emailNotificationsEnabled ? 'enabled' : 'disabled' }}">
+                    {{ user.emailNotificationsEnabled ? 'Enabled' : 'Disabled' }}
+                </span>
+            </div>
+
+            <form method="post" class="settings-form preference-auto-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('update_preferences') }}">
+
+                <label class="email-preference-panel">
+                    <input type="checkbox" name="email_notifications_enabled" value="1" {{ user.emailNotificationsEnabled ? 'checked' : '' }}>
+                    <span class="email-preference-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm-.4 4.25-7.1 4.75a1 1 0 0 1-1 0L4.4 8.25 5.5 6.6 12 10.95l6.5-4.35 1.1 1.65Z"/></svg>
+                    </span>
+                    <span class="email-preference-copy">
+                        <strong>Send me deadline reminder emails</strong>
+                        <small>In-app alerts stay active. Email is only used for urgent deadline reminders.</small>
+                    </span>
+                    <span class="email-preference-check" aria-hidden="true"></span>
+                </label>
+
+                <div class="email-reminder-types">
+                    <span>Due soon</span>
+                    <span>Overdue</span>
+                    <span>High risk</span>
+                </div>
+
+                <noscript>
+                    <button type="submit" class="btn btn-primary-yellow">Save Preferences</button>
+                </noscript>
+                <span class="preference-saving" aria-live="polite">Saving preference...</span>
+            </form>
+        </article>
+
+        <aside class="card settings-card">
+            <div class="activity-card-header">
+                <div>
+                    <span class="eyebrow">Account activity</span>
+                    <h2>Login tracking</h2>
+                </div>
+                <span class="activity-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5v1h1a2 2 0 0 1 2 2v10H4V10a2 2 0 0 1 2-2h1V7a5 5 0 0 1 5-5Zm-3 6h6V7a3 3 0 0 0-6 0v1Zm2 5v4h2v-4h-2Z"/></svg>
+                </span>
+            </div>
+
+            <div class="activity-stats">
+                <div class="activity-stat">
+                    <span>Total logins</span>
+                    <strong>{{ user.loginCount }}</strong>
+                </div>
+                <div class="activity-stat accent">
+                    <span>Last login</span>
+                    <strong>{{ user.lastLoginAt ? user.lastLoginAt|date('d M Y') : 'Not recorded' }}</strong>
+                    <small>{{ user.lastLoginAt ? user.lastLoginAt|date('H:i') : 'Sign in again to update' }}</small>
+                </div>
+            </div>
+
+            <p class="settings-note">These values help the risk model estimate recent engagement without storing sensitive content.</p>
+        </aside>
+    </section>
+</div>
+
+<script>
+    document.querySelectorAll('.preference-auto-form input[type="checkbox"]').forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+            const form = checkbox.closest('form');
+            form?.classList.add('is-saving');
+            form?.requestSubmit();
+        });
+    });
+</script>
+{% endblock %}

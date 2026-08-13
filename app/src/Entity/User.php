@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_USER_EMAIL_UNSUBSCRIBE_TOKEN', fields: ['emailUnsubscribeToken'])]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 #[ORM\HasLifecycleCallbacks]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -48,8 +49,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $deletedAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastLoginAt = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $loginCount = 0;
+
     #[ORM\Column(options: ['default' => true])]
     private bool $emailNotificationsEnabled = true;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $emailUnsubscribeToken = null;
 
     /**
      * @var Collection<int, Course>
@@ -70,6 +80,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
         $this->createdAt = $now;
         $this->updatedAt = $now;
+        $this->emailUnsubscribeToken = bin2hex(random_bytes(32));
     }
 
     #[ORM\PrePersist]
@@ -220,6 +231,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->deletedAt !== null;
     }
 
+    public function getLastLoginAt(): ?\DateTimeImmutable
+    {
+        return $this->lastLoginAt;
+    }
+
+    public function setLastLoginAt(?\DateTimeImmutable $lastLoginAt): static
+    {
+        $this->lastLoginAt = $lastLoginAt;
+
+        return $this;
+    }
+
+    public function getLoginCount(): int
+    {
+        return $this->loginCount;
+    }
+
+    public function setLoginCount(int $loginCount): static
+    {
+        $this->loginCount = $loginCount;
+
+        return $this;
+    }
+
+    public function recordLogin(\DateTimeImmutable $loggedInAt): static
+    {
+        $this->lastLoginAt = $loggedInAt;
+        $this->loginCount++;
+
+        return $this;
+    }
+
     public function isEmailNotificationsEnabled(): bool
     {
         return $this->emailNotificationsEnabled;
@@ -230,6 +273,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->emailNotificationsEnabled = $emailNotificationsEnabled;
 
         return $this;
+    }
+
+    public function getEmailUnsubscribeToken(): ?string
+    {
+        return $this->emailUnsubscribeToken;
+    }
+
+    public function setEmailUnsubscribeToken(?string $emailUnsubscribeToken): static
+    {
+        $this->emailUnsubscribeToken = $emailUnsubscribeToken;
+
+        return $this;
+    }
+
+    public function ensureEmailUnsubscribeToken(): string
+    {
+        if ($this->emailUnsubscribeToken === null || $this->emailUnsubscribeToken === '') {
+            $this->emailUnsubscribeToken = bin2hex(random_bytes(32));
+        }
+
+        return $this->emailUnsubscribeToken;
     }
 
     public function canReceiveEmailNotifications(): bool

@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Email Unsubscribed | SMARTDEADLINE AI{% endblock %}
+
+{% block body %}
+<section class="public-message">
+    <div class="public-message-card">
+        <span class="app-logo">SD</span>
+        <p class="eyebrow">Email reminders disabled</p>
+        <h1>You have been unsubscribed.</h1>
+        <p>
+            SMARTDEADLINE AI will no longer send deadline reminder emails to
+            <strong>{{ user.email }}</strong>. In-app notifications remain available when you sign in.
+        </p>
+        <div class="public-message-actions">
+            <a href="{{ path('app_login') }}" class="btn btn-primary-yellow">Sign in</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
