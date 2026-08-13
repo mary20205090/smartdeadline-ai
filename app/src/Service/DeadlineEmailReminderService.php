@@ -103,27 +103,92 @@ class DeadlineEmailReminderService
         $courseName = $course?->getName() ?? 'Not assigned';
         $courseCode = $course?->getCode();
         $deadline = $assignment?->getDeadline()?->format('d M Y, H:i') ?? 'Not set';
+        $status = $this->formatLabel($assignment?->getStatus());
+        $priority = $this->formatLabel($assignment?->getPriority());
         $courseDisplay = $courseCode !== null && $courseCode !== ''
             ? sprintf('%s (%s)', $courseName, $courseCode)
             : $courseName;
+        $theme = $this->getAlertTheme($notification);
 
         $plainText = sprintf(
-            "Hello %s,\n\n%s\n\nAssignment: %s\nCourse: %s\nDeadline: %s\n\nPlease open SMARTDEADLINE AI and review this work.\n\nSMARTDEADLINE AI",
+            "Hello %s,\n\n%s\n\nAssignment: %s\nCourse: %s\nDeadline: %s\nStatus: %s\nPriority: %s\n\nAction: %s\n\nSMARTDEADLINE AI\nDeadline risk tracker",
             $user?->getFullName() ?: 'Student',
             $notification->getMessage(),
             $assignmentTitle,
             $courseDisplay,
-            $deadline
+            $deadline,
+            $status,
+            $priority,
+            $theme['action']
         );
 
-        $html = sprintf(
-            '<p>Hello %s,</p><p>%s</p><table cellpadding="6" cellspacing="0" style="border-collapse:collapse"><tr><td><strong>Assignment</strong></td><td>%s</td></tr><tr><td><strong>Course</strong></td><td>%s</td></tr><tr><td><strong>Deadline</strong></td><td>%s</td></tr></table><p>Please open SMARTDEADLINE AI and review this work.</p><p>SMARTDEADLINE AI</p>',
-            $this->escape($user?->getFullName() ?: 'Student'),
-            $this->escape((string) $notification->getMessage()),
-            $this->escape($assignmentTitle),
-            $this->escape($courseDisplay),
-            $this->escape($deadline)
-        );
+        $studentName = $this->escape($user?->getFullName() ?: 'Student');
+        $message = $this->escape((string) $notification->getMessage());
+        $escapedTitle = $this->escape($assignmentTitle);
+        $escapedCourse = $this->escape($courseDisplay);
+        $escapedDeadline = $this->escape($deadline);
+        $escapedStatus = $this->escape($status);
+        $escapedPriority = $this->escape($priority);
+        $escapedAction = $this->escape($theme['action']);
+        $escapedAlertTitle = $this->escape((string) $notification->getTitle());
+
+        $html = <<<HTML
+            <div style="margin:0;padding:0;background:#f3f7fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+                <div style="max-width:640px;margin:0 auto;padding:28px 16px;">
+                    <div style="background:#ffffff;border:1px solid #dbe7f3;border-radius:12px;overflow:hidden;box-shadow:0 14px 34px rgba(15,23,42,0.08);">
+                        <div style="background:{$theme['accent']};padding:22px 26px;color:#ffffff;">
+                            <div style="display:inline-block;width:42px;height:42px;line-height:42px;text-align:center;border-radius:50%;background:rgba(255,255,255,0.18);font-size:22px;margin-bottom:12px;">{$theme['icon']}</div>
+                            <div style="font-size:12px;font-weight:700;letter-spacing:0;text-transform:uppercase;opacity:0.9;">SMARTDEADLINE AI Reminder</div>
+                            <h1 style="margin:6px 0 0;font-size:24px;line-height:1.25;font-weight:800;">{$escapedAlertTitle}</h1>
+                            <p style="margin:10px 0 0;font-size:15px;line-height:1.6;color:#eaf3ff;">{$theme['intro']}</p>
+                        </div>
+
+                        <div style="padding:26px;">
+                            <p style="margin:0 0 14px;font-size:15px;line-height:1.6;">Hello {$studentName},</p>
+                            <p style="margin:0 0 20px;font-size:15px;line-height:1.6;">{$message}</p>
+
+                            <div style="border:1px solid #dbe7f3;border-radius:10px;overflow:hidden;margin:20px 0;background:#ffffff;">
+                                <div style="background:{$theme['soft']};padding:12px 16px;font-size:13px;font-weight:800;color:#0f3f78;">Deadline Details</div>
+                                <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;">
+                                    <tr>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:13px;color:#53657d;width:32%;">Assignment</td>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:14px;font-weight:700;color:#0f172a;">{$escapedTitle}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:13px;color:#53657d;">Course</td>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:14px;color:#0f172a;">{$escapedCourse}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:13px;color:#53657d;">Deadline</td>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:14px;font-weight:800;color:#0f172a;">{$escapedDeadline}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:13px;color:#53657d;">Status</td>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:14px;color:#0f172a;">{$escapedStatus}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:13px;color:#53657d;">Priority</td>
+                                        <td style="padding:14px 16px;border-top:1px solid #e5edf5;font-size:14px;color:#0f172a;">{$escapedPriority}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div style="background:#fff8dc;border-left:5px solid #ffd43b;border-radius:8px;padding:14px 16px;margin:20px 0;">
+                                <div style="font-size:13px;font-weight:800;color:#7a5200;margin-bottom:4px;">Suggested action</div>
+                                <div style="font-size:14px;line-height:1.6;color:#253244;">{$escapedAction}</div>
+                            </div>
+
+                            <p style="margin:22px 0 0;font-size:14px;line-height:1.6;color:#53657d;">Open SMARTDEADLINE AI to review the assignment, update progress, or mark it as complete.</p>
+                        </div>
+
+                        <div style="padding:16px 26px;background:#f8fbff;border-top:1px solid #dbe7f3;font-size:12px;line-height:1.5;color:#6b7b91;">
+                            SMARTDEADLINE AI · Deadline risk tracker<br>
+                            You received this because email deadline reminders are enabled for your account.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            HTML;
 
         return (new Email())
             ->from($this->mailerFrom)
@@ -141,5 +206,44 @@ class DeadlineEmailReminderService
     private function escape(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+
+    /**
+     * @return array{icon:string, accent:string, soft:string, intro:string, action:string}
+     */
+    private function getAlertTheme(Notification $notification): array
+    {
+        return match ($notification->getTitle()) {
+            'Assignment overdue' => [
+                'icon' => '&#9888;',
+                'accent' => '#dc2626',
+                'soft' => '#fff1f2',
+                'intro' => 'This deadline has already passed and needs attention.',
+                'action' => 'Review the assignment immediately and update your progress or completion status.',
+            ],
+            'AI Risk Alert' => [
+                'icon' => '&#9889;',
+                'accent' => '#0f4c81',
+                'soft' => '#eaf4ff',
+                'intro' => 'The prediction model has flagged this assignment as high risk.',
+                'action' => 'Prioritize this assignment and break the remaining work into smaller steps today.',
+            ],
+            default => [
+                'icon' => '&#128276;',
+                'accent' => '#0f4c81',
+                'soft' => '#eaf4ff',
+                'intro' => 'A deadline is coming up soon. A quick review now can save stress later.',
+                'action' => 'Open the assignment, confirm what is left, and plan the next study session.',
+            ],
+        };
+    }
+
+    private function formatLabel(?string $value): string
+    {
+        if ($value === null || $value === '') {
+            return 'Not set';
+        }
+
+        return ucwords(str_replace('_', ' ', $value));
     }
 }

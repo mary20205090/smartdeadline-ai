@@ -59,7 +59,7 @@ final class DashboardController extends AbstractController
             }
         }
 
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
         $dueSoonLimit = $now->modify('+3 days');
 
         $pendingAssignments = array_filter($assignments, function ($assignment) {
@@ -75,17 +75,19 @@ final class DashboardController extends AbstractController
         });
 
         $overdueAssignments = array_filter($assignments, function ($assignment) use ($now) {
-            return $assignment->getDeadline() < $now && $assignment->getStatus() !== 'completed';
+            return $this->getLocalDeadline($assignment) < $now && $assignment->getStatus() !== 'completed';
         });
 
         $dueSoonAssignments = array_filter($assignments, function ($assignment) use ($now, $dueSoonLimit) {
-            return $assignment->getDeadline() >= $now
-                && $assignment->getDeadline() <= $dueSoonLimit
+            $deadline = $this->getLocalDeadline($assignment);
+
+            return $deadline >= $now
+                && $deadline <= $dueSoonLimit
                 && $assignment->getStatus() !== 'completed';
         });
 
         $upcomingAssignments = array_filter($assignments, function ($assignment) use ($now) {
-            return $assignment->getDeadline() >= $now && $assignment->getStatus() !== 'completed';
+            return $this->getLocalDeadline($assignment) >= $now && $assignment->getStatus() !== 'completed';
         });
 
         usort($upcomingAssignments, function ($a, $b) {
@@ -156,5 +158,15 @@ final class DashboardController extends AbstractController
             'highRiskAssignments' => array_slice($highRiskAssignments, 0, 5),
             'predictionsByAssignmentId' => $predictionsByAssignmentId,
         ]);
+    }
+
+    private function getLocalDeadline($assignment): DateTimeImmutable
+    {
+        $deadline = $assignment->getDeadline();
+
+        return new DateTimeImmutable(
+            $deadline->format('Y-m-d H:i:s'),
+            new \DateTimeZone('Africa/Nairobi')
+        );
     }
 }

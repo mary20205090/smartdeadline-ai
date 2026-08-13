@@ -52,6 +52,8 @@ class AssignmentRiskPredictionService
             $modelName = self::FALLBACK_MODEL_NAME;
         }
 
+        [$riskLevel, $probability] = $this->applyDeadlineUrgencyGuard($assignment, $riskLevel, $probability);
+
         $prediction = $this->entityManager
             ->getRepository(Prediction::class)
             ->findOneBy(
@@ -133,6 +135,10 @@ class AssignmentRiskPredictionService
             return null;
         }
 
+        if ($this->isUrgentAssignment($assignment)) {
+            return null;
+        }
+
         $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
         $ageInSeconds = $now->getTimestamp() - $lastUpdatedAt->getTimestamp();
 
@@ -146,7 +152,7 @@ class AssignmentRiskPredictionService
     private function buildFeatures(Assignment $assignment): array
     {
         $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
-        $deadline = $assignment->getDeadline();
+        $deadline = $this->getLocalDeadline($assignment);
 
         $daysToDeadline = (int) floor(($deadline->getTimestamp() - $now->getTimestamp()) / 86400);
 
@@ -261,7 +267,7 @@ class AssignmentRiskPredictionService
     private function calculateFallbackRisk(Assignment $assignment): array
     {
         $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
-        $deadline = $assignment->getDeadline();
+        $deadline = $this->getLocalDeadline($assignment);
 
         if ($assignment->getStatus() === 'completed') {
             return ['low', 0.05];
@@ -309,6 +315,60 @@ class AssignmentRiskPredictionService
         }
 
         return ['low', round($score, 2)];
+    }
+
+    private function applyDeadlineUrgencyGuard(Assignment $assignment, string $riskLevel, ?float $probability): array
+    {
+        if ($assignment->getStatus() === 'completed') {
+            return ['low', 0.05];
+        }
+
+        $secondsToDeadline = $this->getLocalDeadline($assignment)->getTimestamp()
+            - (new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')))->getTimestamp();
+
+        if ($secondsToDeadline < 0) {
+            return ['high', max($probability ?? 0, 0.95)];
+        }
+
+        if ($assignment->getStatus() === 'pending' && $secondsToDeadline <= 3600) {
+            return ['high', max($probability ?? 0, 0.90)];
+        }
+
+        if (
+            $assignment->getStatus() === 'pending'
+            && $assignment->getPriority() === 'high'
+            && $secondsToDeadline <= 86400
+        ) {
+            return ['high', max($probability ?? 0, 0.85)];
+        }
+
+        if ($riskLevel === 'low' && $secondsToDeadline <= 21600) {
+            return ['medium', max($probability ?? 0, 0.60)];
+        }
+
+        return [$riskLevel, $probability];
+    }
+
+    private function isUrgentAssignment(Assignment $assignment): bool
+    {
+        if ($assignment->getStatus() === 'completed') {
+            return false;
+        }
+
+        $secondsToDeadline = $this->getLocalDeadline($assignment)->getTimestamp()
+            - (new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')))->getTimestamp();
+
+        return $secondsToDeadline <= 86400;
+    }
+
+    private function getLocalDeadline(Assignment $assignment): \DateTimeImmutable
+    {
+        $deadline = $assignment->getDeadline();
+
+        return new \DateTimeImmutable(
+            $deadline->format('Y-m-d H:i:s'),
+            new \DateTimeZone('Africa/Nairobi')
+        );
     }
 
     private function logPredictionActivity(Assignment $assignment, ?string $previousRiskLevel, string $newRiskLevel): void

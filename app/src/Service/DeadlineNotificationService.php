@@ -30,7 +30,9 @@ class DeadlineNotificationService
                     continue;
                 }
 
-                if ($assignment->getDeadline() < $now) {
+                $deadline = $this->getLocalDeadline($assignment);
+
+                if ($deadline < $now) {
                     $this->createNotificationIfMissing(
                         user: $user,
                         assignment: $assignment,
@@ -38,10 +40,10 @@ class DeadlineNotificationService
                         message: sprintf(
                             '%s is overdue. The deadline was %s.',
                             $assignment->getTitle(),
-                            $assignment->getDeadline()->format('d M Y, H:i')
+                            $deadline->format('d M Y, H:i')
                         )
                     );
-                } elseif ($assignment->getDeadline() <= $dueSoonLimit) {
+                } elseif ($deadline <= $dueSoonLimit) {
                     $this->createNotificationIfMissing(
                         user: $user,
                         assignment: $assignment,
@@ -49,7 +51,7 @@ class DeadlineNotificationService
                         message: sprintf(
                             '%s is due soon on %s.',
                             $assignment->getTitle(),
-                            $assignment->getDeadline()->format('d M Y, H:i')
+                            $deadline->format('d M Y, H:i')
                         )
                     );
                 }
@@ -102,5 +104,15 @@ class DeadlineNotificationService
         $notification->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')));
 
         $this->entityManager->persist($notification);
+    }
+
+    private function getLocalDeadline(Assignment $assignment): \DateTimeImmutable
+    {
+        $deadline = $assignment->getDeadline();
+
+        return new \DateTimeImmutable(
+            $deadline->format('Y-m-d H:i:s'),
+            new \DateTimeZone('Africa/Nairobi')
+        );
     }
 }
