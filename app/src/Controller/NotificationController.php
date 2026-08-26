@@ -17,15 +17,41 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class NotificationController extends AbstractController
 {
     #[Route(name: 'app_notification_index', methods: ['GET'])]
-    public function index(NotificationRepository $notificationRepository): Response
+    public function index(Request $request, NotificationRepository $notificationRepository): Response
     {
         $user = $this->getCurrentUser();
+        $statusFilter = $request->query->get('status', 'unread');
+
+        if (!in_array($statusFilter, ['unread', 'read', 'all'], true)) {
+            $statusFilter = 'unread';
+        }
+
+        $queryBuilder = $notificationRepository->createQueryBuilder('notification')
+            ->andWhere('notification.user = :user')
+            ->andWhere('notification.channel = :channel')
+            ->setParameter('user', $user)
+            ->setParameter('channel', 'in_app')
+            ->orderBy('notification.createdAt', 'DESC');
+
+        if ($statusFilter !== 'all') {
+            $queryBuilder
+                ->andWhere('notification.status = :status')
+                ->setParameter('status', $statusFilter);
+        }
 
         return $this->render('notification/index.html.twig', [
-            'notifications' => $notificationRepository->findBy(
-                ['user' => $user, 'channel' => 'in_app'],
-                ['createdAt' => 'DESC']
-            ),
+            'notifications' => $queryBuilder->getQuery()->getResult(),
+            'notificationFilter' => $statusFilter,
+            'unreadNotificationCount' => $notificationRepository->count([
+                'user' => $user,
+                'channel' => 'in_app',
+                'status' => 'unread',
+            ]),
+            'readNotificationCount' => $notificationRepository->count([
+                'user' => $user,
+                'channel' => 'in_app',
+                'status' => 'read',
+            ]),
         ]);
     }
 
@@ -45,7 +71,9 @@ final class NotificationController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_notification_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_notification_index', [
+            'status' => $request->query->get('status', 'unread'),
+        ], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/read-all', name: 'app_notification_read_all', methods: ['POST'])]
@@ -70,7 +98,9 @@ final class NotificationController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_notification_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_notification_index', [
+            'status' => $request->query->get('status', 'unread'),
+        ], Response::HTTP_SEE_OTHER);
     }
 
     private function getCurrentUser(): User

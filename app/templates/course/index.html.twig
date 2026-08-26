@@ -42,6 +42,34 @@
                                 <div class="actions">
                                     <a href="{{ path('app_course_show', {'id': course.id}) }}" class="action-btn action-view">View</a>
                                     <a href="{{ path('app_course_edit', {'id': course.id}) }}" class="action-btn action-edit">Edit</a>
+                                    <button type="button"
+                                            class="action-btn action-delete"
+                                            onclick="document.getElementById('removeCourseModal{{ course.id }}').classList.add('active')">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="modal-backdrop" id="removeCourseModal{{ course.id }}">
+                                    <div class="modal-card modal-danger">
+                                        <div class="modal-icon">!</div>
+                                        <h3>Remove course?</h3>
+                                        <p>
+                                            This will remove <strong>{{ course.name }}</strong> from your account and hide its assignments.
+                                            You cannot recover it from the app once removed.
+                                        </p>
+
+                                        <div class="modal-actions">
+                                            <button type="button"
+                                                    class="modal-cancel"
+                                                    onclick="document.getElementById('removeCourseModal{{ course.id }}').classList.remove('active')">
+                                                Cancel
+                                            </button>
+                                            <form method="post" action="{{ path('app_course_delete', {'id': course.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ course.id) }}">
+                                                <button class="modal-delete">Yes, remove</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>

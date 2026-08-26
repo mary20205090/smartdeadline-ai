@@ -3,16 +3,17 @@
 <button type="button"
         class="delete-trigger"
         onclick="document.getElementById('{{ modalId }}').classList.add('active')">
-    Delete Assignment
+    Remove Assignment
 </button>
 
 <div class="modal-backdrop" id="{{ modalId }}">
-    <div class="modal-card">
-        <h3>Delete assignment?</h3>
+    <div class="modal-card modal-danger">
+        <div class="modal-icon">!</div>
+        <h3>Remove assignment?</h3>
 
         <p>
-            You are about to delete <strong>{{ assignment.title }}</strong>.
-            This action cannot be undone.
+            This will remove <strong>{{ assignment.title }}</strong> from your account.
+            You cannot recover it from the app once removed.
         </p>
 
         <div class="modal-actions">
@@ -24,7 +25,7 @@
 
             <form method="post" action="{{ path('app_assignment_delete', {'id': assignment.id}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ assignment.id) }}">
-                <button class="modal-delete">Yes, delete</button>
+                <button class="modal-delete">Yes, remove</button>
             </form>
         </div>
     </div>

@@ -2,7 +2,7 @@
     <div class="form-group">
         {{ form_label(form.title, 'Assignment Title') }}
         {{ form_widget(form.title, {'attr': {'placeholder': 'Example: CAT 1 Quiz'}}) }}
-        <div class="form-help">Enter a clear assignment title.</div>
+        <div class="form-help">Enter a clear assignment title, not numbers only.</div>
         <div class="form-errors">{{ form_errors(form.title) }}</div>
     </div>
 

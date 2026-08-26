@@ -6,6 +6,7 @@ use App\Entity\Course;
 use App\Entity\User;
 use App\Form\CourseType;
 use App\Repository\CourseRepository;
+use App\Service\ActivityLogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -86,8 +87,12 @@ final class CourseController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_course_delete', methods: ['POST'])]
-    public function delete(Request $request, Course $course, EntityManagerInterface $entityManager): Response
-    {
+    public function delete(
+        Request $request,
+        Course $course,
+        EntityManagerInterface $entityManager,
+        ActivityLogService $activityLogService
+    ): Response {
         $this->denyAccessToCourseOwnerOnly($course);
 
         if ($this->isCsrfTokenValid('delete'.$course->getId(), $request->getPayload()->getString('_token'))) {
@@ -95,7 +100,12 @@ final class CourseController extends AbstractController
             $course->setDeletedAt($now);
 
             foreach ($course->getAssignments() as $assignment) {
+                if ($assignment->isDeleted()) {
+                    continue;
+                }
+
                 $assignment->setDeletedAt($now);
+                $activityLogService->logAssignmentEvent($assignment, 'assignment_deleted');
             }
 
             $entityManager->flush();

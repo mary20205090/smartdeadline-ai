@@ -103,7 +103,7 @@ final class DashboardController extends AbstractController
         });
 
         $recentNotifications = $notificationRepository->findBy(
-            ['user' => $user, 'channel' => 'in_app'],
+            ['user' => $user, 'channel' => 'in_app', 'status' => 'unread'],
             ['createdAt' => 'DESC'],
             5
         );

@@ -42,6 +42,13 @@ class AssignmentType extends AbstractType
                         ? $course->getName().' ('.$course->getCode().')'
                         : $course->getName();
                 },
+                'choice_filter' => static function (?Course $course): bool {
+                    if ($course === null) {
+                        return true;
+                    }
+
+                    return preg_match('/[A-Za-z]/', $course->getName() ?? '') === 1;
+                },
                 'placeholder' => 'Select course',
                 'query_builder' => function (CourseRepository $courseRepository) use ($user) {
                     return $courseRepository->createQueryBuilder('course')

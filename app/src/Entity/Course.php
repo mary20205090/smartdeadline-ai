@@ -6,6 +6,7 @@ use App\Repository\CourseRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CourseRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -17,6 +18,9 @@ class Course
     private ?int $id = null;
 
     #[ORM\Column(length: 150)]
+    #[Assert\NotBlank(message: 'Enter the course name.')]
+    #[Assert\Length(max: 150, maxMessage: 'Course name cannot be longer than {{ limit }} characters.')]
+    #[Assert\Regex(pattern: '/[A-Za-z]/', message: 'Course name must include letters, not numbers only.')]
     private ?string $name = null;
 
     #[ORM\Column(length: 50, nullable: true)]

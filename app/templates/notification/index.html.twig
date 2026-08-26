@@ -11,8 +11,23 @@
         </div>
 
         <div class="top-actions">
-            {% if notifications is not empty %}
-                <form method="post" action="{{ path('app_notification_read_all') }}">
+            <form method="get" action="{{ path('app_notification_index') }}" class="notification-filter-form">
+                <label for="notification-status">Show</label>
+                <select id="notification-status" name="status" onchange="this.form.submit()">
+                    <option value="unread" {{ notificationFilter == 'unread' ? 'selected' : '' }}>
+                        Unread ({{ unreadNotificationCount|default(0) }})
+                    </option>
+                    <option value="read" {{ notificationFilter == 'read' ? 'selected' : '' }}>
+                        Read ({{ readNotificationCount|default(0) }})
+                    </option>
+                    <option value="all" {{ notificationFilter == 'all' ? 'selected' : '' }}>
+                        All
+                    </option>
+                </select>
+            </form>
+
+            {% if unreadNotificationCount|default(0) > 0 %}
+                <form method="post" action="{{ path('app_notification_read_all', {'status': notificationFilter}) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('read_all_notifications') }}">
                     <button type="submit" class="btn btn-primary-yellow">Mark All Read</button>
                 </form>
@@ -23,7 +38,13 @@
     <div class="card">
         {% if notifications is empty %}
             <div class="empty-state centered">
-                No notifications yet. Deadline alerts will appear here when assignments are due soon or overdue.
+                {% if notificationFilter == 'read' %}
+                    No read notifications yet.
+                {% elseif notificationFilter == 'all' %}
+                    No notifications yet. Deadline alerts will appear here when assignments are due soon or overdue.
+                {% else %}
+                    No unread notifications. New deadline alerts will appear here.
+                {% endif %}
             </div>
         {% else %}
             <ul class="notification-list">
@@ -49,7 +70,7 @@
                             {% endif %}
 
                             {% if notification.status == 'unread' %}
-                                <form method="post" action="{{ path('app_notification_read', {'id': notification.id}) }}">
+                                <form method="post" action="{{ path('app_notification_read', {'id': notification.id, 'status': notificationFilter}) }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('read' ~ notification.id) }}">
                                     <button type="submit" class="btn btn-secondary">Mark Read</button>
                                 </form>

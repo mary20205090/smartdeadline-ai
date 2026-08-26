@@ -91,6 +91,35 @@
                                             <button type="submit" class="action-btn complete-btn">Complete</button>
                                         </form>
                                     {% endif %}
+
+                                    <button type="button"
+                                            class="action-btn action-delete"
+                                            onclick="document.getElementById('removeAssignmentModal{{ assignment.id }}').classList.add('active')">
+                                        Remove
+                                    </button>
+                                </div>
+
+                                <div class="modal-backdrop" id="removeAssignmentModal{{ assignment.id }}">
+                                    <div class="modal-card modal-danger">
+                                        <div class="modal-icon">!</div>
+                                        <h3>Remove assignment?</h3>
+                                        <p>
+                                            This will remove <strong>{{ assignment.title }}</strong> from your account.
+                                            You cannot recover it from the app once removed.
+                                        </p>
+
+                                        <div class="modal-actions">
+                                            <button type="button"
+                                                    class="modal-cancel"
+                                                    onclick="document.getElementById('removeAssignmentModal{{ assignment.id }}').classList.remove('active')">
+                                                Cancel
+                                            </button>
+                                            <form method="post" action="{{ path('app_assignment_delete', {'id': assignment.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ assignment.id) }}">
+                                                <button class="modal-delete">Yes, remove</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>

@@ -49,6 +49,10 @@
                             <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2.75 2.75 0 0 0 2.65-2h-5.3A2.75 2.75 0 0 0 12 22Zm7-6v2H5v-2l1.8-1.8V10a5.2 5.2 0 0 1 4.2-5.1V3h2v1.9A5.2 5.2 0 0 1 17.2 10v4.2L19 16Z"/></svg>
                             Notifications
                         </a>
+                        <a href="{{ path('app_report_index') }}" class="{{ currentRoute starts with 'app_report' ? 'active' : '' }}">
+                            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16v2H4V3h2v14h3V8h4v9h3V5h4v12h2v2H4Z"/></svg>
+                            Reports
+                        </a>
                         <a href="{{ path('app_preferences') }}" class="{{ currentRoute starts with 'app_preferences' ? 'active' : '' }}">
                             <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13.5c.1-.5.1-1 .1-1.5s0-1-.1-1.5l2-1.5-2-3.5-2.4 1a8.8 8.8 0 0 0-2.6-1.5L14 2h-4l-.4 3a8.8 8.8 0 0 0-2.6 1.5l-2.4-1-2 3.5 2 1.5A9.9 9.9 0 0 0 4.5 12c0 .5 0 1 .1 1.5l-2 1.5 2 3.5 2.4-1a8.8 8.8 0 0 0 2.6 1.5l.4 3h4l.4-3a8.8 8.8 0 0 0 2.6-1.5l2.4 1 2-3.5-2-1.5ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
                             Preferences
@@ -77,6 +81,8 @@
                                     Assignments
                                 {% elseif currentRoute starts with 'app_notification' %}
                                     Notifications
+                                {% elseif currentRoute starts with 'app_report' %}
+                                    Reports
                                 {% elseif currentRoute starts with 'app_preferences' %}
                                     Preferences
                                 {% else %}
@@ -115,6 +121,13 @@
         {% if app.user %}
                 </div>
             </div>
+            <script>
+                document.addEventListener('click', function (event) {
+                    if (event.target.classList.contains('modal-backdrop')) {
+                        event.target.classList.remove('active');
+                    }
+                });
+            </script>
         {% endif %}
     </body>
 </html>
