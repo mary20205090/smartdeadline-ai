@@ -37,7 +37,7 @@
                             <td class="serial-cell">{{ loop.index }}</td>
                             <td><strong>{{ course.name }}</strong></td>
                             <td>{{ course.code ?: 'N/A' }}</td>
-                            <td>{{ course.createdAt ? course.createdAt|date('d M Y, H:i') : '' }}</td>
+                            <td>{{ course.createdAt ? course.createdAt|date('d M Y, h:i A') : '' }}</td>
                             <td>
                                 <div class="actions">
                                     <a href="{{ path('app_course_show', {'id': course.id}) }}" class="action-btn action-view">View</a>

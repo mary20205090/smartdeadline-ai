@@ -18,8 +18,8 @@
                 <strong>{{ assignment.title }}</strong>
             </div>
             <div>
-                <span>Selected course</span>
-                <strong>
+                <span>Course to save</span>
+                <strong data-selected-course-preview>
                     {{ assignment.course.name }}
                     {% if assignment.course.code %}
                         ({{ assignment.course.code }})
@@ -36,4 +36,20 @@
         <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}" class="back-link">View details</a>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const courseSelect = document.getElementById('{{ form.course.vars.id }}');
+        const coursePreview = document.querySelector('[data-selected-course-preview]');
+
+        if (!courseSelect || !coursePreview) {
+            return;
+        }
+
+        courseSelect.addEventListener('change', function () {
+            const selectedOption = courseSelect.options[courseSelect.selectedIndex];
+            coursePreview.textContent = selectedOption && selectedOption.value ? selectedOption.text : 'Select course';
+        });
+    });
+</script>
 {% endblock %}

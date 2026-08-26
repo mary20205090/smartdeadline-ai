@@ -9,8 +9,10 @@ use App\Entity\Course;
 use App\Entity\User;
 use App\Form\AssignmentType;
 use App\Repository\AssignmentRepository;
+use App\Repository\CourseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -64,6 +66,7 @@ final class AssignmentController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $entityManager,
+        CourseRepository $courseRepository,
         ActivityLogService $activityLogService,
         AssignmentRiskPredictionService $assignmentRiskPredictionService
     ): Response
@@ -72,11 +75,25 @@ final class AssignmentController extends AbstractController
 
         $form = $this->createForm(AssignmentType::class, $assignment, [
             'user' => $this->getCurrentUser(),
+            'selected_course' => null,
         ]);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $selectedCourse = $this->getSubmittedCourse($request, $form, $courseRepository);
+
+            if (!$selectedCourse instanceof Course) {
+                $form->get('course')->addError(new FormError('Select one of your active courses.'));
+
+                return $this->render('assignment/new.html.twig', [
+                    'assignment' => $assignment,
+                    'form' => $form,
+                ]);
+            }
+
+            $this->applyAssignmentFormValues($assignment, $form, $selectedCourse);
+
             if (!$this->hasCurrentOrFutureDeadline($assignment)) {
                 $form->get('deadline')->addError(new FormError('Choose a current or future deadline.'));
 
@@ -124,6 +141,7 @@ final class AssignmentController extends AbstractController
         Request $request,
         Assignment $assignment,
         EntityManagerInterface $entityManager,
+        CourseRepository $courseRepository,
         ActivityLogService $activityLogService,
         AssignmentRiskPredictionService $assignmentRiskPredictionService
     ): Response
@@ -135,6 +153,7 @@ final class AssignmentController extends AbstractController
 
         $form = $this->createForm(AssignmentType::class, $assignment, [
             'user' => $this->getCurrentUser(),
+            'selected_course' => $assignment->getCourse(),
             'deadline_min' => $assignment->getDeadline() >= $now
                 ? $now->format('Y-m-d\TH:i')
                 : null,
@@ -143,9 +162,9 @@ final class AssignmentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $selectedCourse = $form->get('course')->getData();
+            $selectedCourse = $this->getSubmittedCourse($request, $form, $courseRepository);
 
-            if (!$selectedCourse instanceof Course || $selectedCourse->getUser()?->getId() !== $this->getCurrentUser()->getId() || $selectedCourse->isDeleted()) {
+            if (!$selectedCourse instanceof Course) {
                 $form->get('course')->addError(new FormError('Select one of your active courses.'));
 
                 return $this->render('assignment/edit.html.twig', [
@@ -154,11 +173,7 @@ final class AssignmentController extends AbstractController
                 ]);
             }
 
-            $assignment
-                ->setTitle(trim((string) $form->get('title')->getData()))
-                ->setDescription($form->get('description')->getData())
-                ->setPriority($form->get('priority')->getData())
-                ->setCourse($selectedCourse);
+            $this->applyAssignmentFormValues($assignment, $form, $selectedCourse);
 
             $deadlineChanged = $assignment->getDeadline()?->format('Y-m-d H:i:s') !== $originalDeadline;
 
@@ -279,6 +294,45 @@ final class AssignmentController extends AbstractController
         ) {
             throw $this->createAccessDeniedException('You cannot access this assignment.');
         }
+    }
+
+    private function getSubmittedCourse(Request $request, FormInterface $form, CourseRepository $courseRepository): ?Course
+    {
+        $submittedData = $request->request->all($form->getName());
+        $submittedCourseId = $submittedData['course'] ?? null;
+
+        if ($submittedCourseId === null || $submittedCourseId === '') {
+            $course = $form->get('course')->getData();
+
+            return $course instanceof Course && $this->canUseCourse($course) ? $course : null;
+        }
+
+        $course = $courseRepository->createQueryBuilder('course')
+            ->andWhere('course.id = :courseId')
+            ->andWhere('course.user = :user')
+            ->andWhere('course.deletedAt IS NULL')
+            ->setParameter('courseId', $submittedCourseId)
+            ->setParameter('user', $this->getCurrentUser())
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $course instanceof Course && $this->canUseCourse($course) ? $course : null;
+    }
+
+    private function canUseCourse(Course $course): bool
+    {
+        return !$course->isDeleted()
+            && $course->getUser()?->getId() === $this->getCurrentUser()->getId();
+    }
+
+    private function applyAssignmentFormValues(Assignment $assignment, FormInterface $form, Course $course): void
+    {
+        $assignment
+            ->setTitle(trim((string) $form->get('title')->getData()))
+            ->setDescription($form->get('description')->getData())
+            ->setPriority($form->get('priority')->getData())
+            ->setDeadline($form->get('deadline')->getData())
+            ->setCourse($course);
     }
 
     private function hasCurrentOrFutureDeadline(Assignment $assignment): bool

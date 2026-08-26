@@ -104,7 +104,7 @@ class DeadlineEmailReminderService
         $assignmentTitle = $assignment?->getTitle() ?? 'General reminder';
         $courseName = $course?->getName() ?? 'Not assigned';
         $courseCode = $course?->getCode();
-        $deadline = $assignment?->getDeadline()?->format('d M Y, H:i') ?? 'Not set';
+        $deadline = $assignment?->getDeadline()?->format('d M Y, h:i A') ?? 'Not set';
         $status = $this->formatLabel($assignment?->getStatus());
         $priority = $this->formatLabel($assignment?->getPriority());
         $courseDisplay = $courseCode !== null && $courseCode !== ''

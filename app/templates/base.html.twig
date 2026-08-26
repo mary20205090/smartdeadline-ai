@@ -61,13 +61,10 @@
 
                     <div class="app-sidebar-user">
                         <span>{{ app.user.userIdentifier }}</span>
-                        <form method="post" action="{{ path('app_logout') }}">
-                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-                            <button type="submit" class="sidebar-logout">
-                                <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v2H5v14h9v2H3V3h11Zm3.6 5.4L22.2 13l-4.6 4.6-1.4-1.4 2.2-2.2H10v-2h8.4l-2.2-2.2 1.4-1.4Z"/></svg>
-                                Logout
-                            </button>
-                        </form>
+                        <button type="button" class="sidebar-logout" data-open-logout-modal>
+                            <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v2H5v14h9v2H3V3h11Zm3.6 5.4L22.2 13l-4.6 4.6-1.4-1.4 2.2-2.2H10v-2h8.4l-2.2-2.2 1.4-1.4Z"/></svg>
+                            Logout
+                        </button>
                     </div>
                 </aside>
 
@@ -101,12 +98,9 @@
                             <a href="{{ path('app_preferences') }}" class="topbar-icon" aria-label="Open preferences" title="Preferences">
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13.5c.1-.5.1-1 .1-1.5s0-1-.1-1.5l2-1.5-2-3.5-2.4 1a8.8 8.8 0 0 0-2.6-1.5L14 2h-4l-.4 3a8.8 8.8 0 0 0-2.6 1.5l-2.4-1-2 3.5 2 1.5A9.9 9.9 0 0 0 4.5 12c0 .5 0 1 .1 1.5l-2 1.5 2 3.5 2.4-1a8.8 8.8 0 0 0 2.6 1.5l.4 3h4l.4-3a8.8 8.8 0 0 0 2.6-1.5l2.4 1 2-3.5-2-1.5ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
                             </a>
-                            <form method="post" action="{{ path('app_logout') }}" class="topbar-logout-form">
-                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-                                <button type="submit" class="topbar-icon logout" aria-label="Logout" title="Logout">
-                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v2H5v14h9v2H3V3h11Zm3.6 5.4L22.2 13l-4.6 4.6-1.4-1.4 2.2-2.2H10v-2h8.4l-2.2-2.2 1.4-1.4Z"/></svg>
-                                </button>
-                            </form>
+                            <button type="button" class="topbar-icon logout" aria-label="Logout" title="Logout" data-open-logout-modal>
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v2H5v14h9v2H3V3h11Zm3.6 5.4L22.2 13l-4.6 4.6-1.4-1.4 2.2-2.2H10v-2h8.4l-2.2-2.2 1.4-1.4Z"/></svg>
+                            </button>
                         </div>
                     </header>
 
@@ -127,10 +121,39 @@
         {% if app.user %}
                 </div>
             </div>
+            <div class="modal-backdrop" id="logoutConfirmModal" aria-hidden="true">
+                <div class="modal-card logout-modal" role="dialog" aria-modal="true" aria-labelledby="logoutConfirmTitle">
+                    <div class="modal-icon logout-modal-icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v2H5v14h9v2H3V3h11Zm3.6 5.4L22.2 13l-4.6 4.6-1.4-1.4 2.2-2.2H10v-2h8.4l-2.2-2.2 1.4-1.4Z"/></svg>
+                    </div>
+                    <h3 id="logoutConfirmTitle">Logout from SMARTDEADLINE AI?</h3>
+                    <p>Your current session will end and you will return to the sign in page.</p>
+                    <div class="modal-actions">
+                        <button type="button" class="modal-cancel" data-close-logout-modal>Stay logged in</button>
+                        <form method="post" action="{{ path('app_logout') }}">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                            <button type="submit" class="modal-delete logout-confirm-submit">Logout</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <script>
                 document.addEventListener('click', function (event) {
+                    const logoutModal = document.getElementById('logoutConfirmModal');
+
+                    if (event.target.closest('[data-open-logout-modal]')) {
+                        logoutModal?.classList.add('active');
+                        logoutModal?.setAttribute('aria-hidden', 'false');
+                    }
+
+                    if (event.target.closest('[data-close-logout-modal]')) {
+                        logoutModal?.classList.remove('active');
+                        logoutModal?.setAttribute('aria-hidden', 'true');
+                    }
+
                     if (event.target.classList.contains('modal-backdrop')) {
                         event.target.classList.remove('active');
+                        event.target.setAttribute('aria-hidden', 'true');
                     }
                 });
             </script>

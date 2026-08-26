@@ -31,6 +31,7 @@ class DeadlineNotificationService
                 }
 
                 $deadline = $this->getLocalDeadline($assignment);
+                $courseDisplay = $this->getCourseDisplay($assignment);
 
                 if ($deadline < $now) {
                     $this->createNotificationIfMissing(
@@ -38,9 +39,10 @@ class DeadlineNotificationService
                         assignment: $assignment,
                         title: 'Assignment overdue',
                         message: sprintf(
-                            '%s is overdue. The deadline was %s.',
+                            '%s for %s is overdue. The deadline was %s.',
                             $assignment->getTitle(),
-                            $deadline->format('d M Y, H:i')
+                            $courseDisplay,
+                            $deadline->format('d M Y, h:i A')
                         )
                     );
                 } elseif ($deadline <= $dueSoonLimit) {
@@ -49,9 +51,10 @@ class DeadlineNotificationService
                         assignment: $assignment,
                         title: 'Assignment due soon',
                         message: sprintf(
-                            '%s is due soon on %s.',
+                            '%s for %s is due soon on %s.',
                             $assignment->getTitle(),
-                            $deadline->format('d M Y, H:i')
+                            $courseDisplay,
+                            $deadline->format('d M Y, h:i A')
                         )
                     );
                 }
@@ -64,8 +67,9 @@ class DeadlineNotificationService
                         assignment: $assignment,
                         title: 'AI Risk Alert',
                         message: sprintf(
-                            '%s is predicted as high risk of missing the deadline. Please review it and take action.',
-                            $assignment->getTitle()
+                            '%s for %s is predicted as high risk of missing the deadline. Please review it and take action.',
+                            $assignment->getTitle(),
+                            $courseDisplay
                         )
                     );
                 }
@@ -114,5 +118,20 @@ class DeadlineNotificationService
             $deadline->format('Y-m-d H:i:s'),
             new \DateTimeZone('Africa/Nairobi')
         );
+    }
+
+    private function getCourseDisplay(Assignment $assignment): string
+    {
+        $course = $assignment->getCourse();
+
+        if ($course === null) {
+            return 'Unassigned course';
+        }
+
+        $code = $course->getCode();
+
+        return $code !== null && $code !== ''
+            ? sprintf('%s (%s)', $course->getName(), $code)
+            : (string) $course->getName();
     }
 }

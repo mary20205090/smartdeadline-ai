@@ -53,8 +53,13 @@
                         <div>
                             <div class="notification-title">{{ notification.title }}</div>
                             <div class="notification-message">{{ notification.message }}</div>
+                            {% if notification.assignment %}
+                                <div class="notification-course">
+                                    {{ notification.assignment.course.name }}{% if notification.assignment.course.code %} ({{ notification.assignment.course.code }}){% endif %}
+                                </div>
+                            {% endif %}
                             <div class="notification-time">
-                                {{ notification.createdAt ? notification.createdAt|date('d M Y, H:i') : '' }}
+                                {{ notification.createdAt ? notification.createdAt|date('d M Y, h:i A') : '' }}
                             </div>
                         </div>
 

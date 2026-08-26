@@ -4,18 +4,29 @@
 
 {% block body %}
 <div class="page-container report-page">
-    <div class="page-header">
+    <div class="page-header report-header">
         <div>
             <h1>Reports</h1>
             <p>Review course load, assignment progress, risk levels, and recent activity.</p>
         </div>
+
+        <form class="report-jump-form">
+            <label for="report-section">Jump to</label>
+            <select id="report-section" onchange="if (this.value) document.querySelector(this.value)?.scrollIntoView({behavior: 'smooth'}); this.selectedIndex = 0;">
+                <option value="">Select section</option>
+                <option value="#overview">Overview</option>
+                <option value="#courses">Courses</option>
+                <option value="#assignments">Assignments</option>
+                <option value="#activity">Recent activity</option>
+            </select>
+        </form>
     </div>
 
-    <section class="report-hero">
+    <section id="overview" class="report-hero">
         <div>
             <p class="eyebrow">Academic workload</p>
             <h2>{{ totalAssignments }} assignments across {{ totalCourses }} courses</h2>
-            <p>Use this summary to explain how SMARTDEADLINE AI tracks work and highlights deadline risk.</p>
+            <p>Use this summary to explain how SMARTDEADLINE AI tracks work, monitors progress, and highlights deadline risk.</p>
         </div>
         <div class="report-hero-stat">
             {{ statusCounts.overdue }}
@@ -36,29 +47,127 @@
         <div class="metric-card"><span>Unpredicted</span><strong>{{ riskCounts.unknown }}</strong></div>
     </section>
 
-    <section class="section-card report-activity">
-        <div class="card-heading">
-            <div>
-                <h2>Recent Activity</h2>
-                <p>Latest assignment events recorded by the system.</p>
+    <div class="report-sections">
+        <section id="courses" class="section-card">
+            <div class="card-heading">
+                <div>
+                    <h2>Course Workload</h2>
+                    <p>Shows how assignments are distributed across courses.</p>
+                </div>
+                <a href="{{ path('app_course_index') }}" class="small-btn">View Courses</a>
             </div>
-        </div>
 
-        {% if recentActivity is empty %}
-            <p class="muted-text">No recent activity recorded yet.</p>
-        {% else %}
-            <div class="activity-list">
-                {% for activity in recentActivity %}
-                    <div class="activity-row">
-                        <div>
-                            <strong>{{ activity.eventType|replace({'_': ' '})|title }}</strong>
-                            <span>{{ activity.assignment.title }}</span>
-                        </div>
-                        <time>{{ activity.createdAt ? activity.createdAt|date('d M Y, H:i') : 'N/A' }}</time>
-                    </div>
-                {% endfor %}
+            {% if courseReports is empty %}
+                <p class="muted-text">No courses added yet.</p>
+            {% else %}
+                <div class="report-table-wrap">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>S/N</th>
+                                <th>Course</th>
+                                <th>Open</th>
+                                <th>Completed</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in courseReports %}
+                                <tr>
+                                    <td class="serial-cell">{{ loop.index }}</td>
+                                    <td>
+                                        <strong>{{ row.course.name }}</strong>
+                                        {% if row.course.code %}
+                                            <br><small>{{ row.course.code }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ row.open }}</td>
+                                    <td>{{ row.completed }}</td>
+                                    <td>{{ row.assignments }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </section>
+
+        <section id="assignments" class="section-card">
+            <div class="card-heading">
+                <div>
+                    <h2>Assignment Snapshot</h2>
+                    <p>Nearest active work and risk status for quick review.</p>
+                </div>
+                <a href="{{ path('app_assignment_index') }}" class="small-btn">View Assignments</a>
             </div>
-        {% endif %}
-    </section>
+
+            {% if assignments is empty %}
+                <p class="muted-text">No assignments added yet.</p>
+            {% else %}
+                <div class="report-table-wrap">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>S/N</th>
+                                <th>Assignment</th>
+                                <th>Course</th>
+                                <th>Deadline</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                                <tr>
+                                    <td class="serial-cell">{{ loop.index }}</td>
+                                    <td><strong>{{ assignment.title }}</strong></td>
+                                    <td>{{ assignment.course.name }}</td>
+                                    <td>{{ assignment.deadline ? assignment.deadline|date('d M Y, h:i A') : 'N/A' }}</td>
+                                    <td><span class="badge badge-{{ assignment.status }}">{{ assignment.status|replace({'_': ' '}) }}</span></td>
+                                    <td>
+                                        {% if assignment.priority %}
+                                            <span class="badge badge-{{ assignment.priority }}">{{ assignment.priority }}</span>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </section>
+
+        <section id="activity" class="section-card report-activity">
+            <div class="card-heading">
+                <div>
+                    <h2>Recent Activity</h2>
+                    <p>Audit trail for assignment changes and prediction updates.</p>
+                </div>
+            </div>
+
+            {% if recentActivity is empty %}
+                <p class="muted-text">No recent activity recorded yet.</p>
+            {% else %}
+                <div class="activity-list">
+                    {% for activity in recentActivity %}
+                        <div class="activity-row">
+                            <div>
+                                <strong>{{ activity.eventType|replace({'_': ' '})|title }}</strong>
+                                <span>
+                                    {{ activity.assignment.title }}
+                                    {% if activity.assignment.course %}
+                                        · {{ activity.assignment.course.name }}{% if activity.assignment.course.code %} ({{ activity.assignment.course.code }}){% endif %}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <time>{{ activity.createdAt ? activity.createdAt|date('d M Y, h:i A') : 'N/A' }}</time>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+    </div>
 </div>
 {% endblock %}

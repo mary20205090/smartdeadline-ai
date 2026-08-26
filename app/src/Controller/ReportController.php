@@ -82,19 +82,67 @@ final class ReportController extends AbstractController
             $riskCounts[$riskLevel] = ($riskCounts[$riskLevel] ?? 0) + 1;
         }
 
-        $recentActivity = $activityLogRepository->createQueryBuilder('activityLog')
+        usort($assignments, function (Assignment $a, Assignment $b) {
+            return $a->getDeadline() <=> $b->getDeadline();
+        });
+
+        $courseReports = [];
+
+        foreach ($courses as $course) {
+            $courseAssignments = [];
+
+            foreach ($course->getAssignments() as $assignment) {
+                if (!$assignment->isDeleted()) {
+                    $courseAssignments[] = $assignment;
+                }
+            }
+
+            $courseReports[] = [
+                'course' => $course,
+                'assignments' => count($courseAssignments),
+                'open' => count(array_filter($courseAssignments, static fn (Assignment $assignment): bool => $assignment->getStatus() !== 'completed')),
+                'completed' => count(array_filter($courseAssignments, static fn (Assignment $assignment): bool => $assignment->getStatus() === 'completed')),
+            ];
+        }
+
+        $rawRecentActivity = $activityLogRepository->createQueryBuilder('activityLog')
             ->join('activityLog.assignment', 'assignment')
             ->join('assignment.course', 'course')
             ->andWhere('course.user = :user')
+            ->andWhere('assignment.deletedAt IS NULL')
+            ->andWhere('course.deletedAt IS NULL')
             ->setParameter('user', $user)
             ->orderBy('activityLog.createdAt', 'DESC')
-            ->setMaxResults(8)
+            ->setMaxResults(30)
             ->getQuery()
             ->getResult();
+
+        $recentActivity = [];
+        $seenPredictionAssignments = [];
+
+        foreach ($rawRecentActivity as $activityLog) {
+            $assignmentId = $activityLog->getAssignment()?->getId();
+
+            if ($activityLog->getEventType() === 'prediction_generated' && $assignmentId !== null) {
+                if (isset($seenPredictionAssignments[$assignmentId])) {
+                    continue;
+                }
+
+                $seenPredictionAssignments[$assignmentId] = true;
+            }
+
+            $recentActivity[] = $activityLog;
+
+            if (count($recentActivity) === 8) {
+                break;
+            }
+        }
 
         return $this->render('reports/index.html.twig', [
             'totalCourses' => count($courses),
             'totalAssignments' => count($assignments),
+            'courseReports' => $courseReports,
+            'assignments' => array_slice($assignments, 0, 10),
             'statusCounts' => $statusCounts,
             'riskCounts' => $riskCounts,
             'recentActivity' => $recentActivity,

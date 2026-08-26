@@ -1085,6 +1085,17 @@ tr:last-child td {
     line-height: 1.5;
 }
 
+.notification-course {
+    display: inline-flex;
+    margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: var(--brand-blue-soft);
+    color: var(--brand-blue);
+    font-size: 12px;
+    font-weight: 800;
+}
+
 .notification-time {
     margin-top: 6px;
     color: #98a2b3;
@@ -1508,8 +1519,61 @@ tr:last-child td {
     color: #ffffff;
 }
 
+.logout-modal {
+    max-width: 430px;
+    border-top-color: var(--brand-yellow);
+}
+
+.logout-modal-icon {
+    background: #fff8db;
+    color: var(--brand-blue);
+}
+
+.logout-modal-icon svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+}
+
+.logout-confirm-submit {
+    background: var(--brand-yellow);
+    color: var(--brand-blue-dark);
+}
+
+.logout-confirm-submit:hover {
+    background: #f6c51f;
+}
+
 .report-page {
     max-width: 1240px;
+}
+
+.report-header {
+    align-items: center;
+}
+
+.report-jump-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.report-jump-form label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.report-jump-form select {
+    min-height: 40px;
+    min-width: 170px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #ffffff;
+    color: var(--text);
+    font-weight: 800;
 }
 
 .report-hero {
@@ -1570,8 +1634,51 @@ tr:last-child td {
     margin-bottom: 16px;
 }
 
+.report-page .metric-card {
+    min-height: 86px;
+    padding: 16px;
+    box-shadow: none;
+}
+
+.report-page .metric-card span {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.report-page .metric-card strong {
+    display: block;
+    margin-top: 10px;
+    color: var(--text);
+    font-size: 24px;
+}
+
 .metric-card.danger-accent {
     border-top: 3px solid var(--danger);
+}
+
+.report-sections {
+    display: grid;
+    gap: 16px;
+}
+
+.report-table-wrap {
+    overflow-x: auto;
+}
+
+.report-table {
+    min-width: 760px;
+}
+
+.report-table th {
+    background: linear-gradient(90deg, var(--brand-blue-soft), #fff8db);
+}
+
+.report-table td,
+.report-table th {
+    padding: 14px 12px;
 }
 
 .activity-list {
