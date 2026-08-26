@@ -35,7 +35,7 @@
         <div class="detail-row">
             <div class="detail-label">Deadline</div>
             <div class="detail-value">
-                {{ assignment.deadline ? assignment.deadline|date('d M Y, H:i') : 'N/A' }}
+                {{ assignment.deadline ? assignment.deadline|date('d M Y, h:i A') : 'N/A' }}
             </div>
         </div>
 
@@ -87,14 +87,21 @@
         <div class="detail-row">
             <div class="detail-label">Completed At</div>
             <div class="detail-value">
-                {{ assignment.completedAt ? assignment.completedAt|date('d M Y, H:i') : 'Not completed yet' }}
+                {{ assignment.completedAt ? assignment.completedAt|date('d M Y, h:i A') : 'Not completed yet' }}
             </div>
         </div>
 
         <div class="detail-row">
             <div class="detail-label">Date Added</div>
             <div class="detail-value">
-                {{ assignment.createdAt ? assignment.createdAt|date('d M Y, H:i') : 'N/A' }}
+                {{ assignment.createdAt ? assignment.createdAt|date('d M Y, h:i A') : 'N/A' }}
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Last Updated</div>
+            <div class="detail-value">
+                {{ assignment.updatedAt ? assignment.updatedAt|date('d M Y, h:i A') : 'N/A' }}
             </div>
         </div>
     </div>

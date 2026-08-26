@@ -5,6 +5,8 @@ namespace App\Form;
 use App\Entity\Assignment;
 use App\Entity\Course;
 use App\Repository\CourseRepository;
+use DateTimeImmutable;
+use DateTimeZone;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -17,18 +19,28 @@ class AssignmentType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $user = $options['user'];
+        $minimumDeadline = $options['deadline_min'];
 
         $builder
             ->add('title')
             ->add('description', TextareaType::class, [
                 'required' => false,
+                'empty_data' => null,
             ])
             ->add('deadline', null, [
                 'widget' => 'single_text',
+                'required' => true,
+                'attr' => [
+                    ...($minimumDeadline !== null ? ['min' => $minimumDeadline] : []),
+                    'data-deadline-guard' => 'true',
+                ],
             ])
             ->add('priority', ChoiceType::class, [
-                'required' => false,
+                'required' => true,
                 'placeholder' => 'Select priority',
+                'placeholder_attr' => [
+                    'disabled' => 'disabled',
+                ],
                 'choices' => [
                     'Low' => 'low',
                     'Medium' => 'medium',
@@ -50,6 +62,10 @@ class AssignmentType extends AbstractType
                     return preg_match('/[A-Za-z]/', $course->getName() ?? '') === 1;
                 },
                 'placeholder' => 'Select course',
+                'placeholder_attr' => [
+                    'disabled' => 'disabled',
+                ],
+                'required' => true,
                 'query_builder' => function (CourseRepository $courseRepository) use ($user) {
                     return $courseRepository->createQueryBuilder('course')
                         ->andWhere('course.user = :user')
@@ -66,6 +82,7 @@ class AssignmentType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Assignment::class,
             'user' => null,
+            'deadline_min' => (new DateTimeImmutable('now', new DateTimeZone('Africa/Nairobi')))->format('Y-m-d\TH:i'),
         ]);
     }
 }

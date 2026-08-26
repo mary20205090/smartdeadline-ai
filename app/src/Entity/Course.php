@@ -19,11 +19,25 @@ class Course
 
     #[ORM\Column(length: 150)]
     #[Assert\NotBlank(message: 'Enter the course name.')]
-    #[Assert\Length(max: 150, maxMessage: 'Course name cannot be longer than {{ limit }} characters.')]
+    #[Assert\Length(
+        min: 4,
+        max: 150,
+        minMessage: 'Course name must be at least {{ limit }} characters.',
+        maxMessage: 'Course name cannot be longer than {{ limit }} characters.'
+    )]
     #[Assert\Regex(pattern: '/[A-Za-z]/', message: 'Course name must include letters, not numbers only.')]
     private ?string $name = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\NotBlank(message: 'Enter the course code.')]
+    #[Assert\Length(
+        min: 3,
+        max: 50,
+        minMessage: 'Course code must be at least {{ limit }} characters.',
+        maxMessage: 'Course code cannot be longer than {{ limit }} characters.'
+    )]
+    #[Assert\Regex(pattern: '/[A-Za-z]/', message: 'Course code must include letters, not numbers only.')]
+    #[Assert\Regex(pattern: '/^[A-Za-z0-9 ]+$/', message: 'Course code can only contain letters, numbers, and spaces.')]
     private ?string $code = null;
 
     #[ORM\Column]

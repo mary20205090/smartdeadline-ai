@@ -12,6 +12,22 @@
     </div>
 
     <div class="card">
+        <div class="edit-context">
+            <div>
+                <span>Currently editing</span>
+                <strong>{{ assignment.title }}</strong>
+            </div>
+            <div>
+                <span>Selected course</span>
+                <strong>
+                    {{ assignment.course.name }}
+                    {% if assignment.course.code %}
+                        ({{ assignment.course.code }})
+                    {% endif %}
+                </strong>
+            </div>
+        </div>
+
         {{ include('assignment/_form.html.twig', {'button_label': 'Update Assignment'}) }}
     </div>
 

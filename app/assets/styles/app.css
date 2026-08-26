@@ -138,18 +138,27 @@ a {
     margin-bottom: 10px;
 }
 
+.app-sidebar-user form,
+.topbar-logout-form {
+    margin: 0;
+}
+
 .sidebar-logout {
     min-height: 40px;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 9px;
     padding: 10px 12px;
+    border: 0;
     border-radius: var(--radius);
     background: rgba(255, 210, 74, 0.16);
     color: var(--brand-yellow);
+    font: inherit;
     font-weight: 900;
     text-decoration: none;
+    cursor: pointer;
 }
 
 .sidebar-logout:hover {
@@ -211,7 +220,9 @@ a {
     border-radius: var(--radius);
     background: #ffffff;
     color: var(--brand-blue);
+    font: inherit;
     text-decoration: none;
+    cursor: pointer;
 }
 
 .topbar-icon:hover {
@@ -429,6 +440,18 @@ a {
 .logged-in-box {
     background: var(--brand-blue-soft);
     color: var(--brand-blue);
+}
+
+.link-button {
+    display: inline;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--brand-blue);
+    font: inherit;
+    font-weight: 900;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 .checkbox-row {
@@ -867,6 +890,14 @@ tbody tr:hover td:first-child {
     font-weight: 800;
 }
 
+.table-description {
+    display: inline-block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
 tr:last-child td {
     border-bottom: 0;
 }
@@ -918,6 +949,38 @@ tr:last-child td {
     margin-top: 6px;
     color: #b91c1c;
     font-size: 13px;
+}
+
+.edit-context {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 14px;
+    border: 1px solid #dbeafe;
+    border-left: 4px solid var(--brand-yellow);
+    border-radius: var(--radius);
+    background: linear-gradient(90deg, #eff6ff 0%, #fffbea 100%);
+}
+
+.edit-context span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.edit-context strong {
+    color: var(--text);
+    font-size: 14px;
+}
+
+@media (max-width: 700px) {
+    .edit-context {
+        grid-template-columns: 1fr;
+    }
 }
 
 .flash {

@@ -38,14 +38,21 @@
                     {% for assignment in assignments %}
                         <tr>
                             <td class="serial-cell">{{ loop.index }}</td>
-                            <td><strong>{{ assignment.title }}</strong></td>
+                            <td>
+                                <strong>{{ assignment.title }}</strong>
+                                {% if assignment.description %}
+                                    <br><small class="table-description">
+                                        {{ assignment.description|length > 90 ? assignment.description|slice(0, 90) ~ '...' : assignment.description }}
+                                    </small>
+                                {% endif %}
+                            </td>
                             <td>
                                 {{ assignment.course.name }}
                                 {% if assignment.course.code %}
                                     <br><small>{{ assignment.course.code }}</small>
                                 {% endif %}
                             </td>
-                            <td>{{ assignment.deadline ? assignment.deadline|date('d M Y, H:i') : 'N/A' }}</td>
+                            <td>{{ assignment.deadline ? assignment.deadline|date('d M Y, h:i A') : 'N/A' }}</td>
                             <td>
                                 <span class="badge badge-{{ assignment.status }}">
                                     {{ assignment.status|replace({'_': ' '}) }}

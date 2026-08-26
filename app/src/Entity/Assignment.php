@@ -20,11 +20,22 @@ class Assignment
 
     #[ORM\Column(length: 180)]
     #[Assert\NotBlank(message: 'Enter the assignment title.')]
-    #[Assert\Length(max: 180, maxMessage: 'Assignment title cannot be longer than {{ limit }} characters.')]
+    #[Assert\Length(
+        min: 4,
+        max: 180,
+        minMessage: 'Assignment title must be at least {{ limit }} characters.',
+        maxMessage: 'Assignment title cannot be longer than {{ limit }} characters.'
+    )]
     #[Assert\Regex(pattern: '/[A-Za-z]/', message: 'Assignment title must include letters, not numbers only.')]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        min: 4,
+        max: 2000,
+        minMessage: 'Description must be at least {{ limit }} characters when provided.',
+        maxMessage: 'Description cannot be longer than {{ limit }} characters.'
+    )]
     private ?string $description = null;
 
     #[ORM\Column]
@@ -34,6 +45,7 @@ class Assignment
     private ?string $status = null;
 
     #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\NotBlank(message: 'Select the assignment priority.')]
     private ?string $priority = null;
 
     #[ORM\Column(nullable: true)]
@@ -121,7 +133,8 @@ class Assignment
 
     public function setDescription(?string $description): static
     {
-        $this->description = $description;
+        $description = $description !== null ? trim($description) : null;
+        $this->description = $description === '' ? null : $description;
 
         return $this;
     }

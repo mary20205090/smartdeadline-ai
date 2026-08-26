@@ -3,10 +3,12 @@
         {{ form_label(form.name, 'Course Name') }}
         {{ form_widget(form.name, {
             'attr': {
-                'placeholder': 'Example: Research Project'
+                'placeholder': 'Example: Research Project',
+                'minlength': 4,
+                'title': 'Course name must be at least 4 characters.'
             }
         }) }}
-        <div class="form-help">Enter the full course or unit name, not numbers only.</div>
+        <div class="form-help">Enter the full course or unit name, at least 4 characters, not numbers only.</div>
         <div class="form-errors">{{ form_errors(form.name) }}</div>
     </div>
 
@@ -14,10 +16,14 @@
         {{ form_label(form.code, 'Course Code') }}
         {{ form_widget(form.code, {
             'attr': {
-                'placeholder': 'Example: BIT 3224'
+                'placeholder': 'Example: BIT 3224',
+                'required': 'required',
+                'minlength': 3,
+                'pattern': '^(?=.*[A-Za-z])[A-Za-z0-9 ]+$',
+                'title': 'Use at least 3 characters. Letters, numbers, and spaces only. Include at least one letter.'
             }
         }) }}
-        <div class="form-help">Enter the official course code if available.</div>
+        <div class="form-help">Enter the official course code, at least 3 characters. Use letters, numbers, and spaces only.</div>
         <div class="form-errors">{{ form_errors(form.code) }}</div>
     </div>
 

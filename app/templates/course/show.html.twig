@@ -24,7 +24,12 @@
 
         <div class="detail-row">
             <div class="detail-label">Date Added</div>
-            <div class="detail-value">{{ course.createdAt ? course.createdAt|date('d M Y, H:i') : 'N/A' }}</div>
+            <div class="detail-value">{{ course.createdAt ? course.createdAt|date('d M Y, h:i A') : 'N/A' }}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Last Updated</div>
+            <div class="detail-value">{{ course.updatedAt ? course.updatedAt|date('d M Y, h:i A') : 'N/A' }}</div>
         </div>
     </div>
 

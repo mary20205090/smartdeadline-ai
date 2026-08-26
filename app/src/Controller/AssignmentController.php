@@ -5,11 +5,13 @@ namespace App\Controller;
 use App\Service\AssignmentRiskPredictionService;
 use App\Service\ActivityLogService;
 use App\Entity\Assignment;
+use App\Entity\Course;
 use App\Entity\User;
 use App\Form\AssignmentType;
 use App\Repository\AssignmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -75,6 +77,15 @@ final class AssignmentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!$this->hasCurrentOrFutureDeadline($assignment)) {
+                $form->get('deadline')->addError(new FormError('Choose a current or future deadline.'));
+
+                return $this->render('assignment/new.html.twig', [
+                    'assignment' => $assignment,
+                    'form' => $form,
+                ]);
+            }
+
             $this->denyAccessToAssignmentOwnerOnly($assignment);
 
             $entityManager->persist($assignment);
@@ -119,13 +130,47 @@ final class AssignmentController extends AbstractController
     {
         $this->denyAccessToAssignmentOwnerOnly($assignment);
 
+        $originalDeadline = $assignment->getDeadline()?->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
+
         $form = $this->createForm(AssignmentType::class, $assignment, [
             'user' => $this->getCurrentUser(),
+            'deadline_min' => $assignment->getDeadline() >= $now
+                ? $now->format('Y-m-d\TH:i')
+                : null,
         ]);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $selectedCourse = $form->get('course')->getData();
+
+            if (!$selectedCourse instanceof Course || $selectedCourse->getUser()?->getId() !== $this->getCurrentUser()->getId() || $selectedCourse->isDeleted()) {
+                $form->get('course')->addError(new FormError('Select one of your active courses.'));
+
+                return $this->render('assignment/edit.html.twig', [
+                    'assignment' => $assignment,
+                    'form' => $form,
+                ]);
+            }
+
+            $assignment
+                ->setTitle(trim((string) $form->get('title')->getData()))
+                ->setDescription($form->get('description')->getData())
+                ->setPriority($form->get('priority')->getData())
+                ->setCourse($selectedCourse);
+
+            $deadlineChanged = $assignment->getDeadline()?->format('Y-m-d H:i:s') !== $originalDeadline;
+
+            if ($deadlineChanged && !$this->hasCurrentOrFutureDeadline($assignment)) {
+                $form->get('deadline')->addError(new FormError('Choose a current or future deadline.'));
+
+                return $this->render('assignment/edit.html.twig', [
+                    'assignment' => $assignment,
+                    'form' => $form,
+                ]);
+            }
+
             $this->denyAccessToAssignmentOwnerOnly($assignment);
 
             $activityLogService->logAssignmentEvent($assignment, 'assignment_updated');
@@ -234,5 +279,22 @@ final class AssignmentController extends AbstractController
         ) {
             throw $this->createAccessDeniedException('You cannot access this assignment.');
         }
+    }
+
+    private function hasCurrentOrFutureDeadline(Assignment $assignment): bool
+    {
+        $deadline = $assignment->getDeadline();
+
+        if ($deadline === null) {
+            return false;
+        }
+
+        $localDeadline = new \DateTimeImmutable(
+            $deadline->format('Y-m-d H:i:s'),
+            new \DateTimeZone('Africa/Nairobi')
+        );
+        $now = (new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi')))->modify('-1 minute');
+
+        return $localDeadline >= $now;
     }
 }

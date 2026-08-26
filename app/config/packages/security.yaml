@@ -23,6 +23,9 @@ security:
             custom_authenticator: App\Security\AppAuthenticator
             logout:
                 path: app_logout
+                enable_csrf: true
+                csrf_token_manager: security.csrf.token_manager
+                csrf_token_id: logout
                 # where to redirect after logout
                 # target: app_any_route
 

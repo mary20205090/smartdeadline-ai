@@ -1,15 +1,30 @@
 {{ form_start(form) }}
+    <div class="form-errors">{{ form_errors(form) }}</div>
+
     <div class="form-group">
         {{ form_label(form.title, 'Assignment Title') }}
-        {{ form_widget(form.title, {'attr': {'placeholder': 'Example: CAT 1 Quiz'}}) }}
-        <div class="form-help">Enter a clear assignment title, not numbers only.</div>
+        {{ form_widget(form.title, {
+            'attr': {
+                'placeholder': 'Example: CAT 1 Quiz',
+                'minlength': 4,
+                'title': 'Assignment title must be at least 4 characters and include letters.'
+            }
+        }) }}
+        <div class="form-help">Enter a clear assignment title, at least 4 characters, not numbers only.</div>
         <div class="form-errors">{{ form_errors(form.title) }}</div>
     </div>
 
     <div class="form-group">
-        {{ form_label(form.description, 'Description') }}
-        {{ form_widget(form.description, {'attr': {'placeholder': 'Brief notes about the assignment'}}) }}
-        <div class="form-help">Optional notes or instructions.</div>
+        {{ form_label(form.description, 'Description (optional)') }}
+        {{ form_widget(form.description, {
+            'attr': {
+                'placeholder': 'Optional: add notes, instructions, or file details',
+                'minlength': 4,
+                'maxlength': 2000,
+                'title': 'If provided, description must be at least 4 characters.'
+            }
+        }) }}
+        <div class="form-help">Optional notes or instructions. If provided, use at least 4 characters.</div>
         <div class="form-errors">{{ form_errors(form.description) }}</div>
     </div>
 
@@ -22,14 +37,14 @@
 
     <div class="form-group">
         {{ form_label(form.priority, 'Priority') }}
-        {{ form_widget(form.priority) }}
+        {{ form_widget(form.priority, {'attr': {'required': 'required', 'data-required-select': 'true'}}) }}
         <div class="form-help">Choose how urgent or important this assignment is.</div>
         <div class="form-errors">{{ form_errors(form.priority) }}</div>
     </div>
 
     <div class="form-group">
         {{ form_label(form.course, 'Course') }}
-        {{ form_widget(form.course) }}
+        {{ form_widget(form.course, {'attr': {'required': 'required', 'data-required-select': 'true'}}) }}
         <div class="form-help">Select the course this assignment belongs to.</div>
         <div class="form-errors">{{ form_errors(form.course) }}</div>
     </div>
