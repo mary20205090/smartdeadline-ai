@@ -91,6 +91,7 @@ class DeadlineNotificationService
                 'user' => $user,
                 'assignment' => $assignment,
                 'title' => $title,
+                'message' => $message,
                 'channel' => 'in_app',
             ]);
 

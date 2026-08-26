@@ -49,8 +49,6 @@ class AssignmentType extends AbstractType
             ])
             ->add('course', EntityType::class, [
                 'class' => Course::class,
-                'mapped' => false,
-                'data' => $options['selected_course'],
                 'choice_label' => function (Course $course): string {
                     return $course->getCode()
                         ? $course->getName().' ('.$course->getCode().')'
@@ -85,7 +83,6 @@ class AssignmentType extends AbstractType
             'data_class' => Assignment::class,
             'user' => null,
             'deadline_min' => (new DateTimeImmutable('now', new DateTimeZone('Africa/Nairobi')))->format('Y-m-d\TH:i'),
-            'selected_course' => null,
         ]);
     }
 }

@@ -9,11 +9,10 @@ use App\Entity\Course;
 use App\Entity\User;
 use App\Form\AssignmentType;
 use App\Repository\AssignmentRepository;
-use App\Repository\CourseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -42,7 +41,7 @@ final class AssignmentController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        
+
         $predictionsByAssignmentId = [];
 
         foreach ($assignments as $assignment) {
@@ -66,7 +65,6 @@ final class AssignmentController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $entityManager,
-        CourseRepository $courseRepository,
         ActivityLogService $activityLogService,
         AssignmentRiskPredictionService $assignmentRiskPredictionService
     ): Response
@@ -75,13 +73,12 @@ final class AssignmentController extends AbstractController
 
         $form = $this->createForm(AssignmentType::class, $assignment, [
             'user' => $this->getCurrentUser(),
-            'selected_course' => null,
         ]);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $selectedCourse = $this->getSubmittedCourse($request, $form, $courseRepository);
+            $selectedCourse = $assignment->getCourse();
 
             if (!$selectedCourse instanceof Course) {
                 $form->get('course')->addError(new FormError('Select one of your active courses.'));
@@ -92,7 +89,16 @@ final class AssignmentController extends AbstractController
                 ]);
             }
 
-            $this->applyAssignmentFormValues($assignment, $form, $selectedCourse);
+            if (!$this->canUseCourse($selectedCourse)) {
+                $form->get('course')->addError(new FormError('Select one of your active courses.'));
+
+                return $this->render('assignment/new.html.twig', [
+                    'assignment' => $assignment,
+                    'form' => $form,
+                ]);
+            }
+
+            $this->applyAssignmentFormValues($assignment, $form);
 
             if (!$this->hasCurrentOrFutureDeadline($assignment)) {
                 $form->get('deadline')->addError(new FormError('Choose a current or future deadline.'));
@@ -141,7 +147,6 @@ final class AssignmentController extends AbstractController
         Request $request,
         Assignment $assignment,
         EntityManagerInterface $entityManager,
-        CourseRepository $courseRepository,
         ActivityLogService $activityLogService,
         AssignmentRiskPredictionService $assignmentRiskPredictionService
     ): Response
@@ -153,7 +158,6 @@ final class AssignmentController extends AbstractController
 
         $form = $this->createForm(AssignmentType::class, $assignment, [
             'user' => $this->getCurrentUser(),
-            'selected_course' => $assignment->getCourse(),
             'deadline_min' => $assignment->getDeadline() >= $now
                 ? $now->format('Y-m-d\TH:i')
                 : null,
@@ -162,7 +166,7 @@ final class AssignmentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $selectedCourse = $this->getSubmittedCourse($request, $form, $courseRepository);
+            $selectedCourse = $assignment->getCourse();
 
             if (!$selectedCourse instanceof Course) {
                 $form->get('course')->addError(new FormError('Select one of your active courses.'));
@@ -173,7 +177,16 @@ final class AssignmentController extends AbstractController
                 ]);
             }
 
-            $this->applyAssignmentFormValues($assignment, $form, $selectedCourse);
+            if (!$this->canUseCourse($selectedCourse)) {
+                $form->get('course')->addError(new FormError('Select one of your active courses.'));
+
+                return $this->render('assignment/edit.html.twig', [
+                    'assignment' => $assignment,
+                    'form' => $form,
+                ]);
+            }
+
+            $this->applyAssignmentFormValues($assignment, $form);
 
             $deadlineChanged = $assignment->getDeadline()?->format('Y-m-d H:i:s') !== $originalDeadline;
 
@@ -188,9 +201,11 @@ final class AssignmentController extends AbstractController
 
             $this->denyAccessToAssignmentOwnerOnly($assignment);
 
+            $entityManager->persist($assignment);
+            $entityManager->flush();
+
             $activityLogService->logAssignmentEvent($assignment, 'assignment_updated');
             $assignmentRiskPredictionService->predictAndSave($assignment, true);
-
             $entityManager->flush();
 
             return $this->redirectToRoute('app_assignment_index', [], Response::HTTP_SEE_OTHER);
@@ -225,7 +240,7 @@ final class AssignmentController extends AbstractController
 
         return $this->redirectToRoute('app_assignment_index', [], Response::HTTP_SEE_OTHER);
     }
-    
+
     #[Route('/{id}/complete', name: 'app_assignment_complete', methods: ['POST'])]
     public function complete(
         Request $request,
@@ -296,43 +311,22 @@ final class AssignmentController extends AbstractController
         }
     }
 
-    private function getSubmittedCourse(Request $request, FormInterface $form, CourseRepository $courseRepository): ?Course
-    {
-        $submittedData = $request->request->all($form->getName());
-        $submittedCourseId = $submittedData['course'] ?? null;
-
-        if ($submittedCourseId === null || $submittedCourseId === '') {
-            $course = $form->get('course')->getData();
-
-            return $course instanceof Course && $this->canUseCourse($course) ? $course : null;
-        }
-
-        $course = $courseRepository->createQueryBuilder('course')
-            ->andWhere('course.id = :courseId')
-            ->andWhere('course.user = :user')
-            ->andWhere('course.deletedAt IS NULL')
-            ->setParameter('courseId', $submittedCourseId)
-            ->setParameter('user', $this->getCurrentUser())
-            ->getQuery()
-            ->getOneOrNullResult();
-
-        return $course instanceof Course && $this->canUseCourse($course) ? $course : null;
-    }
-
     private function canUseCourse(Course $course): bool
     {
         return !$course->isDeleted()
             && $course->getUser()?->getId() === $this->getCurrentUser()->getId();
     }
 
-    private function applyAssignmentFormValues(Assignment $assignment, FormInterface $form, Course $course): void
+    private function applyAssignmentFormValues(
+        Assignment $assignment,
+        FormInterface $form
+    ): void
     {
         $assignment
             ->setTitle(trim((string) $form->get('title')->getData()))
-            ->setDescription($form->get('description')->getData())
-            ->setPriority($form->get('priority')->getData())
+            ->setDescription($form->get('description')->getData() !== null ? trim((string) $form->get('description')->getData()) : null)
             ->setDeadline($form->get('deadline')->getData())
-            ->setCourse($course);
+            ->setPriority($form->get('priority')->getData() !== null ? trim((string) $form->get('priority')->getData()) : null);
     }
 
     private function hasCurrentOrFutureDeadline(Assignment $assignment): bool
