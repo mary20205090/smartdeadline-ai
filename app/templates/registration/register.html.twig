@@ -44,6 +44,8 @@
             <div class="form-group">
                 {{ form_label(registrationForm.email, 'Email address') }}
                 {{ form_widget(registrationForm.email) }}
+                <div class="form-help">Use a valid email address, for example mary@example.com.</div>
+                <div class="form-errors" data-email-live-error style="display: none;"></div>
                 {{ form_errors(registrationForm.email) }}
             </div>
 
@@ -75,4 +77,60 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const emailInput = document.querySelector('[data-valid-email]');
+            const emailError = document.querySelector('[data-email-live-error]');
+
+            if (!emailInput || !emailError) {
+                return;
+            }
+
+            const emailPattern = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
+
+            function validateEmailField() {
+                const value = emailInput.value.trim();
+
+                if (value === '') {
+                    emailInput.setCustomValidity('Email address is required.');
+                    emailError.textContent = 'Email address is required.';
+                    emailError.style.display = 'block';
+                    return false;
+                }
+
+                if (value.includes('..')) {
+                    emailInput.setCustomValidity('Email address cannot contain consecutive dots.');
+                    emailError.textContent = 'Email address cannot contain consecutive dots.';
+                    emailError.style.display = 'block';
+                    return false;
+                }
+
+                if (!emailPattern.test(value)) {
+                    emailInput.setCustomValidity('Enter a valid email address such as mary@example.com.');
+                    emailError.textContent = 'Enter a valid email address such as mary@example.com.';
+                    emailError.style.display = 'block';
+                    return false;
+                }
+
+                emailInput.setCustomValidity('');
+                emailError.textContent = '';
+                emailError.style.display = 'none';
+                return true;
+            }
+
+            emailInput.addEventListener('input', validateEmailField);
+            emailInput.addEventListener('blur', validateEmailField);
+
+            emailInput.closest('form')?.addEventListener('submit', function (event) {
+                if (!validateEmailField()) {
+                    event.preventDefault();
+                    emailInput.reportValidity();
+                }
+            });
+        });
+    </script>
 {% endblock %}
