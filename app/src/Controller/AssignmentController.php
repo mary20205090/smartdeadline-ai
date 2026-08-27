@@ -32,12 +32,19 @@ final class AssignmentController extends AbstractController
         $user = $this->getCurrentUser();
 
         $assignments = $assignmentRepository->createQueryBuilder('assignment')
+            ->addSelect("CASE
+                WHEN assignment.status = 'in_progress' THEN 0
+                WHEN assignment.status = 'pending' THEN 1
+                WHEN assignment.status = 'completed' THEN 2
+                ELSE 3
+            END AS HIDDEN statusOrder")
             ->innerJoin('assignment.course', 'course')
             ->andWhere('course.user = :user')
             ->andWhere('assignment.deletedAt IS NULL')
             ->andWhere('course.deletedAt IS NULL')
             ->setParameter('user', $user)
-            ->orderBy('assignment.deadline', 'ASC')
+            ->orderBy('statusOrder', 'ASC')
+            ->addOrderBy('assignment.deadline', 'ASC')
             ->getQuery()
             ->getResult();
 
