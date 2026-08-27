@@ -122,7 +122,11 @@
                 </form>
             {% endif %}
 
-            <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}" class="btn btn-primary-yellow">Edit Assignment</a>
+            {% if assignment.status == 'completed' %}
+                <span class="btn btn-disabled" title="Completed assignments are view-only">Completed - view only</span>
+            {% else %}
+                <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}" class="btn btn-primary-yellow">Edit Assignment</a>
+            {% endif %}
         </div>
 
         {{ include('assignment/_delete_form.html.twig') }}

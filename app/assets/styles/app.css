@@ -668,6 +668,19 @@ a {
     color: #8a5b00;
 }
 
+.action-disabled,
+.btn-disabled {
+    border: 1px solid var(--line);
+    background: #eef2f7;
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.action-disabled:hover,
+.btn-disabled:hover {
+    background: #eef2f7;
+}
+
 .complete-btn,
 .btn-success {
     background: var(--success);

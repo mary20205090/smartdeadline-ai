@@ -153,6 +153,12 @@ final class AssignmentController extends AbstractController
     {
         $this->denyAccessToAssignmentOwnerOnly($assignment);
 
+        if ($assignment->getStatus() === 'completed') {
+            return $this->redirectToRoute('app_assignment_show', [
+                'id' => $assignment->getId(),
+            ], Response::HTTP_SEE_OTHER);
+        }
+
         $originalDeadline = $assignment->getDeadline()?->format('Y-m-d H:i:s');
         $now = new \DateTimeImmutable('now', new \DateTimeZone('Africa/Nairobi'));
 

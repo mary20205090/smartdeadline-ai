@@ -85,7 +85,12 @@
                             <td>
                                 <div class="actions">
                                     <a href="{{ path('app_assignment_show', {'id': assignment.id}) }}" class="action-btn action-view">View</a>
-                                    <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}" class="action-btn action-edit">Edit</a>
+
+                                    {% if assignment.status == 'completed' %}
+                                        <span class="action-btn action-disabled" title="Completed assignments are view-only">Edit</span>
+                                    {% else %}
+                                        <a href="{{ path('app_assignment_edit', {'id': assignment.id}) }}" class="action-btn action-edit">Edit</a>
+                                    {% endif %}
 
                                     {% if assignment.status == 'pending' %}
                                         <form method="post" action="{{ path('app_assignment_start', {'id': assignment.id}) }}" class="inline-form">
