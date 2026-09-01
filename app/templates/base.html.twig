@@ -130,7 +130,7 @@
                     <p>Your current session will end and you will return to the sign in page.</p>
                     <div class="modal-actions">
                         <button type="button" class="modal-cancel" data-close-logout-modal>Stay logged in</button>
-                        <form method="post" action="{{ path('app_logout') }}">
+                    <form method="post" action="{{ path('app_logout') }}" data-turbo="false">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
                             <button type="submit" class="modal-delete logout-confirm-submit">Logout</button>
                         </form>

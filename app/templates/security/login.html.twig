@@ -42,14 +42,14 @@
         {% if app.user %}
             <div class="logged-in-box">
                 You are logged in as {{ app.user.userIdentifier }}.
-                <form method="post" action="{{ path('app_logout') }}" class="inline-form">
+                    <form method="post" action="{{ path('app_logout') }}" class="inline-form" data-turbo="false">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
                     <button type="submit" class="link-button">Logout</button>
                 </form>
             </div>
         {% endif %}
 
-        <form method="post">
+            <form method="post" action="{{ path('app_login') }}" data-turbo="false">
             <div class="form-group">
                 <label for="inputEmail">Email address</label>
                 <input

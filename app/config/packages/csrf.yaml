@@ -1,11 +1,6 @@
-# Enable stateless CSRF protection for forms and logins/logouts
+# Symfony forms use the standard CSRF token id configured below.
+# Login and logout use their own session-backed CSRF tokens in security.yaml.
 framework:
     form:
         csrf_protection:
             token_id: submit
-
-    csrf_protection:
-        stateless_token_ids:
-            - submit
-            - authenticate
-            - logout

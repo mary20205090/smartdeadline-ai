@@ -33,7 +33,7 @@
             <p>Join SMARTDEADLINE AI to manage your courses, track assignments, and receive deadline risk alerts.</p>
         </div>
 
-        {{ form_start(registrationForm) }}
+            {{ form_start(registrationForm, {'attr': {'data-turbo': 'false'}}) }}
 
             <div class="form-group">
                 {{ form_label(registrationForm.fullName, 'Full Name') }}

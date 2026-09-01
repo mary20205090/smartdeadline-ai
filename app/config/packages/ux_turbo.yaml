@@ -1,4 +1,5 @@
-# Enable stateless CSRF protection for forms and logins/logouts
+# Allow Turbo/HTTP clients to pass CSRF tokens through a request header.
+# Login and logout remain normal session-backed security forms.
 framework:
     csrf_protection:
         check_header: true
