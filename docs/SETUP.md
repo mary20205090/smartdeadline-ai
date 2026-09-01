@@ -129,11 +129,11 @@ Important: `.env.local` should not be committed to GitHub because it contains lo
 Optional: configure email reminders in `.env.local`:
 
 ```env
-MAILER_DSN=smtp://YOUR_GMAIL_ADDRESS:YOUR_GMAIL_APP_PASSWORD@smtp.gmail.com:587
-MAILER_FROM="SMARTDEADLINE AI <YOUR_GMAIL_ADDRESS>"
+MAILER_DSN=null://null
+MAILER_FROM="SMARTDEADLINE AI <no-reply@smartdeadline.local>"
 ```
 
-Use a Gmail App Password for `MAILER_DSN`. Do not use your normal Google password, and do not commit `.env.local`.
+Replace `MAILER_DSN` locally with your mail provider DSN when you want real reminder emails. Use a Gmail App Password if you use Gmail, not your normal Google password, and do not commit `.env.local`.
 
 ## 7. Install Symfony Dependencies
 

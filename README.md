@@ -186,11 +186,11 @@ APP_SECRET=PASTE_GENERATED_SECRET_HERE
 Configure local email delivery in `.env.local` if you want to send reminder emails:
 
 ```env
-MAILER_DSN=smtp://YOUR_GMAIL_ADDRESS:YOUR_GMAIL_APP_PASSWORD@smtp.gmail.com:587
-MAILER_FROM="SMARTDEADLINE AI <YOUR_GMAIL_ADDRESS>"
+MAILER_DSN=null://null
+MAILER_FROM="SMARTDEADLINE AI <no-reply@smartdeadline.local>"
 ```
 
-Use a Gmail App Password, not your normal Google password. Keep the real value in `.env.local` only.
+Replace `MAILER_DSN` locally with your mail provider DSN when you want real reminder emails. Use a Gmail App Password if you use Gmail, not your normal Google password. Keep the real value in `.env.local` only.
 
 Run migrations:
 
